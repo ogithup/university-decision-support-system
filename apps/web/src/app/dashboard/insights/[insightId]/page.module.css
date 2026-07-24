@@ -1,0 +1,240 @@
+.page {
+  min-height: 100vh;
+  padding: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 207, 132, 0.32), transparent 22%),
+    radial-gradient(circle at top right, rgba(98, 178, 255, 0.24), transparent 28%),
+    linear-gradient(180deg, #f5f8fc 0%, #edf3fb 100%);
+  color: #14304f;
+  display: grid;
+  gap: 22px;
+}
+
+.topActions {
+  display: flex;
+}
+
+.backLink {
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(27, 75, 124, 0.1);
+}
+
+.hero {
+  padding: 24px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(27, 75, 124, 0.1);
+  box-shadow: 0 18px 45px rgba(41, 78, 123, 0.08);
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.hero_watch,
+.state_watch,
+.state_medium {
+  box-shadow: 0 0 0 1px rgba(178, 119, 21, 0.12), 0 0 26px rgba(255, 197, 92, 0.18);
+  animation: pulseWatch 1.8s ease-in-out infinite;
+}
+
+.hero_risk,
+.state_risk,
+.state_high {
+  box-shadow: 0 0 0 1px rgba(177, 62, 77, 0.14), 0 0 26px rgba(255, 120, 120, 0.2);
+  animation: pulseRisk 1.45s ease-in-out infinite;
+}
+
+.hero h1,
+.panelHeader h2,
+.infoRow strong,
+.heroValueCard strong {
+  margin: 0;
+}
+
+.sectionLabel {
+  margin: 0 0 8px;
+  color: #aa6e12;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.summary,
+.bodyText,
+.infoRow span,
+.heroValueCard span,
+.heroValueCard small,
+.deltaCard small,
+.deltaCard span,
+.alertCard small {
+  color: #5d7594;
+}
+
+.heroMeta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  min-width: 320px;
+}
+
+.heroValueCard,
+.panel,
+.panelFull,
+.deltaCard,
+.infoRow,
+.alertCard {
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(27, 75, 124, 0.1);
+}
+
+.heroValueCard {
+  padding: 18px;
+  display: grid;
+  gap: 6px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.panel,
+.panelFull {
+  padding: 20px;
+  box-shadow: 0 18px 45px rgba(41, 78, 123, 0.08);
+}
+
+.panelFull {
+  grid-column: 1 / -1;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.comboShell {
+  display: grid;
+  gap: 16px;
+}
+
+.comboChart {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.comboLine {
+  fill: none;
+  stroke: #2d6fb5;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.linePoint {
+  fill: #74ddc3;
+  stroke: #ffffff;
+  stroke-width: 3;
+}
+
+.axisText {
+  fill: #5d7594;
+  font-size: 12px;
+  font-family: Georgia, serif;
+}
+
+.deltaStrip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.deltaCard {
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.pillRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.pill,
+.activePill {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(27, 75, 124, 0.08);
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.activePill {
+  background: linear-gradient(135deg, rgba(116, 221, 195, 0.24), rgba(198, 241, 208, 0.2));
+  color: #0f5d49;
+}
+
+.infoList,
+.alertGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.infoRow {
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.infoRow em {
+  font-style: normal;
+  font-weight: 700;
+}
+
+.alertCard {
+  padding: 16px;
+}
+
+.alertHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+@keyframes pulseWatch {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(178, 119, 21, 0.18), 0 0 34px rgba(255, 197, 92, 0.26); }
+}
+
+@keyframes pulseRisk {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(177, 62, 77, 0.2), 0 0 34px rgba(255, 120, 120, 0.3); }
+}
+
+@media (max-width: 960px) {
+  .hero,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    flex-direction: column;
+  }
+
+  .heroMeta,
+  .deltaStrip {
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
+}

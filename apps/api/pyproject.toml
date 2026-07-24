@@ -1,0 +1,29 @@
+[project]
+name = "university-decision-support-api"
+version = "0.1.0"
+description = "Strategic management and decision support API for universities"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.116.0",
+  "uvicorn[standard]>=0.35.0",
+  "sqlalchemy>=2.0.41",
+  "psycopg[binary]>=3.2.9",
+  "pydantic-settings>=2.10.1",
+  "alembic>=1.16.4",
+  "httpx>=0.28.1",
+  "python-multipart>=0.0.20"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.4.1",
+  "pytest-asyncio>=1.1.0",
+  "ruff>=0.12.4"
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
