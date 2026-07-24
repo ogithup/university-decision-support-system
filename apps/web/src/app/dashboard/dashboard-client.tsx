@@ -179,12 +179,12 @@ function RiskMetricRail({ items }: { items: AcademicPerformanceCenterResponse["m
 
 function ExecutiveSparkline({ items }: { items: Array<{ label: string; value: number }> }) {
   const max = Math.max(...items.map((item) => item.value), 1);
-  const width = 260;
-  const height = 72;
+  const width = 232;
+  const height = 58;
   const linePath = items
     .map((item, index) => {
       const x = 16 + (index * (width - 32)) / Math.max(items.length - 1, 1);
-      const y = height - 14 - (item.value / max) * 38;
+      const y = height - 12 - (item.value / max) * 28;
       return `${index === 0 ? "M" : "L"} ${x} ${y}`;
     })
     .join(" ");
@@ -199,7 +199,7 @@ function ExecutiveSparkline({ items }: { items: Array<{ label: string; value: nu
       </defs>
       {items.map((item, index) => {
         const x = 16 + (index * (width - 32)) / Math.max(items.length - 1, 1);
-        const y = height - 14 - (item.value / max) * 38;
+        const y = height - 12 - (item.value / max) * 28;
         return <circle key={item.label} cx={x} cy={y} r={3.5} className={styles.executiveSparkPoint} />;
       })}
       <path d={linePath} className={styles.executiveSparkPath} />
@@ -644,19 +644,19 @@ export function DashboardClient({
                   ))}
                 </div>
                 <div className={styles.financeCharts}>
-                  <div>
+                  <div className={styles.financeCluster}>
                     <h4>Gelir Karmasi</h4>
                     <MiniBars items={finance.revenue_mix} />
                   </div>
-                  <div>
+                  <div className={styles.financeCluster}>
                     <h4>Gider Karmasi</h4>
                     <MiniBars items={finance.expense_mix} />
                   </div>
-                  <div>
+                  <div className={styles.financeCluster}>
                     <h4>Butce Sapmasi</h4>
                     <MiniBars items={finance.budget_variance} />
                   </div>
-                  <div>
+                  <div className={styles.financeCluster}>
                     <h4>Kapasite Kullanimi</h4>
                     <MiniBars items={summary.capacity_utilization} />
                   </div>
