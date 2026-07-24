@@ -99,7 +99,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.3fr) minmax(340px, 0.7fr);
   gap: 18px;
 }
 
@@ -123,6 +123,16 @@
 .comboShell {
   display: grid;
   gap: 16px;
+}
+
+.comboPanel {
+  min-height: 100%;
+}
+
+.sourcePanel,
+.breakdownPanel,
+.diagnosticPanel {
+  min-height: 100%;
 }
 
 .comboChart {
@@ -155,6 +165,44 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
+}
+
+.comboLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(27, 75, 124, 0.08);
+  background: rgba(247, 251, 255, 0.96);
+}
+
+.legendItem small {
+  color: #5d7594;
+}
+
+.legendBar,
+.legendLine {
+  display: inline-flex;
+  border-radius: 999px;
+}
+
+.legendBar {
+  width: 18px;
+  height: 18px;
+  background: linear-gradient(180deg, #ffc85a 0%, #7ec1ff 100%);
+}
+
+.legendLine {
+  width: 24px;
+  height: 4px;
+  background: linear-gradient(90deg, #2d6fb5 0%, #74ddc3 100%);
 }
 
 .deltaCard {

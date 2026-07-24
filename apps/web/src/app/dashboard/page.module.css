@@ -24,11 +24,11 @@
 }
 
 .sidebarOpen {
-  width: 292px;
+  width: 212px;
 }
 
 .sidebarClosed {
-  width: 84px;
+  width: 72px;
 }
 
 .sidebarTop {
@@ -56,7 +56,7 @@
 }
 
 .brandBlock h1 {
-  font-size: 2rem;
+  font-size: 1.7rem;
   line-height: 1.03;
 }
 
@@ -94,8 +94,8 @@
 .activeNavItem {
   display: flex;
   align-items: center;
-  min-height: 48px;
-  padding: 12px 14px;
+  min-height: 42px;
+  padding: 10px 12px;
   border-radius: 16px;
   border: 1px solid transparent;
   transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
@@ -125,9 +125,54 @@
 }
 
 .content {
-  padding: 28px 28px 160px;
+  padding: 20px 20px 160px;
   display: grid;
-  gap: 22px;
+  gap: 18px;
+}
+
+.masterCockpit {
+  display: grid;
+  gap: 16px;
+}
+
+.compactKpiSection {
+  padding: 16px;
+  border-radius: 24px;
+  border: 1px solid rgba(27, 75, 124, 0.1);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(238, 245, 255, 0.94));
+  box-shadow: 0 18px 45px rgba(41, 78, 123, 0.08);
+  display: grid;
+  gap: 12px;
+}
+
+.compactKpiHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.compactKpiRow {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cockpitMainGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.78fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.cockpitSideRail,
+.cockpitBottomGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.cockpitBottomGrid {
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
 }
 
 .dashboardFlow {
@@ -296,14 +341,63 @@
 }
 
 .topbar {
-  padding: 26px;
-  border-radius: 28px;
+  padding: 18px 20px;
+  border-radius: 24px;
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(236, 244, 255, 0.96));
   border: 1px solid rgba(27, 75, 124, 0.1);
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(320px, 0.7fr);
+  gap: 14px;
   box-shadow: 0 18px 45px rgba(41, 78, 123, 0.08);
+}
+
+.topbarMain {
+  display: grid;
+  gap: 16px;
+}
+
+.topbarSignalStrip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.7fr);
+  gap: 10px;
+}
+
+.signalBand {
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(27, 75, 124, 0.08);
+  background: linear-gradient(180deg, rgba(251, 253, 255, 0.98), rgba(240, 247, 255, 0.96));
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.signalBand small,
+.signalBand span {
+  color: #5d7594;
+}
+
+.signalBand strong {
+  font-size: 24px;
+}
+
+.executiveSparkline {
+  width: 100%;
+  height: auto;
+}
+
+.executiveSparkPath {
+  fill: none;
+  stroke: url(#executiveSparklineStroke);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.executiveSparkPoint {
+  fill: #74ddc3;
+  stroke: #ffffff;
+  stroke-width: 2;
 }
 
 .filterChips {
@@ -311,6 +405,32 @@
   flex-wrap: wrap;
   gap: 10px;
   align-content: flex-start;
+}
+
+.executiveRail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.executiveMiniCard {
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(27, 75, 124, 0.08);
+  background: linear-gradient(180deg, rgba(251, 253, 255, 0.98), rgba(240, 247, 255, 0.96));
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.executiveMiniCard small,
+.executiveMiniCard span,
+.panelFooterMeta span {
+  color: #5d7594;
+}
+
+.executiveMiniCard strong {
+  font-size: 22px;
 }
 
 .filterChips span,
@@ -334,7 +454,7 @@
 }
 
 .performanceCenter {
-  padding: 20px;
+  padding: 18px;
   border-radius: 28px;
   border: 1px solid rgba(27, 75, 124, 0.1);
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(238, 245, 255, 0.94));
@@ -342,6 +462,25 @@
   display: grid;
   gap: 16px;
   min-height: 100%;
+}
+
+.insightCalloutRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.calloutCard {
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(27, 75, 124, 0.08);
+  background: rgba(248, 251, 255, 0.96);
+  display: grid;
+  gap: 8px;
+}
+
+.calloutCard span {
+  color: #5d7594;
 }
 
 .performanceCenterHeader {
@@ -367,7 +506,7 @@
 .compactKpiGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
   align-content: start;
 }
 
@@ -447,8 +586,8 @@
 }
 
 .kpiCard h3 {
-  font-size: 32px;
-  margin-top: 10px;
+  font-size: 26px;
+  margin-top: 8px;
 }
 
 .interactiveCard {
@@ -509,9 +648,194 @@
 .primaryGrid,
 .secondaryGrid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
+  grid-template-columns: 1.7fr 1fr 1fr;
   gap: 18px;
   min-width: 0;
+}
+
+.mainTrendShell,
+.riskCorridorShell,
+.scenarioShell,
+.benchmarkShell,
+.resourceShell,
+.programShell,
+.leadershipShell,
+.compactSignalShell,
+.strategyStripShell,
+.benchmarkCompactShell {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.resourceShell {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.benchmarkCompactGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.leadershipPanel {
+  display: grid;
+  gap: 14px;
+}
+
+.masterLeadershipPanel {
+  min-height: 100%;
+}
+
+.masterLeadershipTop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.75fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.masterTrendMini {
+  min-width: 0;
+}
+
+.masterLeadershipNote {
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(27, 75, 124, 0.08);
+  background: rgba(247, 251, 255, 0.96);
+  display: grid;
+  gap: 8px;
+}
+
+.masterLeadershipNote span {
+  color: #5d7594;
+}
+
+.compactSignalShell {
+  align-content: start;
+}
+
+.watchChipRail {
+  display: grid;
+  gap: 10px;
+}
+
+.strategyStripPanel {
+  display: grid;
+  gap: 16px;
+}
+
+.strategySummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.financePanelCompact,
+.benchmarkCompactPanel {
+  min-height: 100%;
+}
+
+.utilityDock {
+  display: grid;
+  gap: 14px;
+}
+
+.utilityCard {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(247, 251, 255, 0.96);
+  border: 1px solid rgba(27, 75, 124, 0.08);
+  display: grid;
+  gap: 12px;
+}
+
+.utilityCard small,
+.utilityMeta span {
+  color: #5d7594;
+}
+
+.utilityMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cockpitUtilityIcons {
+  position: fixed;
+  right: 24px;
+  top: 110px;
+  display: grid;
+  gap: 10px;
+  z-index: 28;
+}
+
+.cockpitIconButton {
+  width: 72px;
+  min-height: 72px;
+  padding: 10px 8px;
+  border-radius: 20px;
+  border: 1px solid rgba(27, 75, 124, 0.1);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 45px rgba(41, 78, 123, 0.1);
+  color: #14304f;
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  align-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.cockpitIconButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 52px rgba(41, 78, 123, 0.14);
+}
+
+.cockpitIconButton span {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.cockpitIconButton small {
+  color: #5d7594;
+  font-size: 11px;
+}
+
+.settingsFlyout {
+  position: fixed;
+  top: 110px;
+  right: 112px;
+  width: min(420px, calc(100vw - 160px));
+  z-index: 29;
+}
+
+.settingsFlyoutBody {
+  display: grid;
+  gap: 12px;
+}
+
+.settingsToggleList {
+  display: grid;
+  gap: 10px;
+}
+
+.settingsToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(27, 75, 124, 0.08);
+}
+
+.settingsToggleRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settingsToggleRow small {
+  color: #5d7594;
 }
 
 .tertiaryGrid {
@@ -522,7 +846,7 @@
 }
 
 .panel {
-  padding: 20px;
+  padding: 18px;
   position: relative;
   overflow: hidden;
   min-width: 0;
@@ -531,6 +855,13 @@
 
 .heroPanel {
   min-height: 320px;
+}
+
+.panelFooterMeta {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .panelHeader {
@@ -542,28 +873,37 @@
 }
 
 .trendColumns {
-  height: 230px;
-  display: flex;
-  align-items: flex-end;
-  gap: 18px;
+  min-height: 240px;
   min-width: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
 }
 
-.trendColumn {
-  flex: 1;
-  display: grid;
-  gap: 10px;
-  justify-items: center;
-  min-width: 56px;
+.trendSvg {
+  width: 100%;
+  height: auto;
+}
+
+.trendLine {
+  fill: none;
+  stroke: #2c6fb5;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trendMarker {
+  fill: #74ddc3;
+  stroke: #ffffff;
+  stroke-width: 3;
 }
 
 .trendBar {
-  width: 100%;
-  max-width: 72px;
-  border-radius: 18px 18px 0 0;
-  background: linear-gradient(180deg, #ffc85a 0%, #7ec1ff 100%);
+  filter: drop-shadow(0 16px 22px rgba(126, 193, 255, 0.16));
+}
+
+.trendAxisLabel {
+  fill: #5d7594;
+  font-size: 12px;
+  font-family: Georgia, serif;
 }
 
 .miniBarChart {
@@ -591,6 +931,48 @@
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, #78bfff 0%, #74ddc3 100%);
+}
+
+.scoreMatrix {
+  display: grid;
+  gap: 14px;
+}
+
+.scoreMatrixRow {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(0, 1fr) 48px;
+  gap: 12px;
+  align-items: center;
+}
+
+.scoreMatrixTrack {
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(150, 180, 209, 0.18);
+  overflow: hidden;
+}
+
+.scoreMatrixFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #78bfff 0%, #74ddc3 100%);
+}
+
+.riskMetricRail {
+  display: grid;
+  gap: 12px;
+}
+
+.riskMetricCard {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(247, 251, 255, 0.96);
+  border: 1px solid rgba(27, 75, 124, 0.08);
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  position: relative;
+  overflow: hidden;
 }
 
 .alertStack,
@@ -673,8 +1055,8 @@
 
 .financeCharts {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
   min-width: 0;
 }
 
@@ -685,12 +1067,18 @@
   min-width: 0;
 }
 
+.metricStripCard strong {
+  font-size: 1.24rem;
+}
+
 .programTable,
 .readinessNotes,
 .goalList,
 .scenarioList,
 .riskList,
-.settingsList {
+.settingsList,
+.promptStack,
+.executiveMiniStack {
   display: grid;
   gap: 12px;
   min-width: 0;
@@ -936,6 +1324,22 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .topbar,
+  .executiveRail,
+  .insightCalloutRow,
+  .topbarSignalStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .compactKpiRow,
+  .cockpitMainGrid,
+  .cockpitBottomGrid,
+  .analysisShell,
+  .resourceShell,
+  .programShell,
+  .masterLeadershipTop,
+  .strategySummaryGrid,
+  .benchmarkCompactGrid,
   .primaryGrid,
   .secondaryGrid,
   .tertiaryGrid,
@@ -969,13 +1373,15 @@
   }
 
   .topbar {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .kpiGrid,
   .compactKpiGrid,
+  .compactKpiRow,
   .financeKpis,
-  .metricStrip {
+  .metricStrip,
+  .strategySummaryGrid {
     grid-template-columns: 1fr;
   }
 
@@ -1015,5 +1421,18 @@
   .assistantLauncher {
     right: 16px;
     bottom: 16px;
+  }
+
+  .cockpitUtilityIcons {
+    top: auto;
+    right: 16px;
+    bottom: 96px;
+  }
+
+  .settingsFlyout {
+    top: auto;
+    right: 96px;
+    bottom: 96px;
+    width: min(360px, calc(100vw - 124px));
   }
 }

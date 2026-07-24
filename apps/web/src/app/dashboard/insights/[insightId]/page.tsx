@@ -60,6 +60,16 @@ function ComboChart({ points }: { points: InsightDetailResponse["combo_trend"] }
         })}
         <path d={linePath} className={styles.comboLine} />
       </svg>
+      <div className={styles.comboLegend}>
+        <div className={styles.legendItem}>
+          <span className={styles.legendBar} />
+          <small>Hacim / seviye</small>
+        </div>
+        <div className={styles.legendItem}>
+          <span className={styles.legendLine} />
+          <small>Degisim ivmesi</small>
+        </div>
+      </div>
       <div className={styles.deltaStrip}>
         {points.map((point) => (
           <div key={point.label} className={styles.deltaCard}>
@@ -105,7 +115,7 @@ export default async function DashboardInsightPage({ params }: { params: Promise
       </section>
 
       <section className={styles.grid}>
-        <article className={styles.panel}>
+        <article className={`${styles.panel} ${styles.comboPanel}`}>
           <div className={styles.panelHeader}>
             <div>
               <p className={styles.sectionLabel}>Combo Chart</p>
@@ -115,7 +125,7 @@ export default async function DashboardInsightPage({ params }: { params: Promise
           <ComboChart points={insight.combo_trend} />
         </article>
 
-        <article className={styles.panel}>
+        <article className={`${styles.panel} ${styles.sourcePanel}`}>
           <div className={styles.panelHeader}>
             <div>
               <p className={styles.sectionLabel}>Kaynak Zinciri</p>
@@ -133,7 +143,7 @@ export default async function DashboardInsightPage({ params }: { params: Promise
           <p className={styles.bodyText}>{insight.source_context.provenance_note}</p>
         </article>
 
-        <article className={styles.panel}>
+        <article className={`${styles.panel} ${styles.breakdownPanel}`}>
           <div className={styles.panelHeader}>
             <div>
               <p className={styles.sectionLabel}>Degisim Kirilimi</p>
@@ -153,7 +163,7 @@ export default async function DashboardInsightPage({ params }: { params: Promise
           </div>
         </article>
 
-        <article className={styles.panel}>
+        <article className={`${styles.panel} ${styles.diagnosticPanel}`}>
           <div className={styles.panelHeader}>
             <div>
               <p className={styles.sectionLabel}>Teshis</p>

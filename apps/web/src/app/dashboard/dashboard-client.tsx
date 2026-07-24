@@ -2,14 +2,12 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { runScenario } from "../../lib/api";
 import {
   AcademicPerformanceCenterResponse,
   DashboardSummaryResponse,
   FinanceSummaryResponse,
-  ScenarioRunResponse,
 } from "../../types/university";
 import { AssistantPanel } from "./assistant-panel";
 import styles from "./page.module.css";
@@ -29,13 +27,6 @@ const sidebarItems = [
   { id: "settings", label: "Ayarlar" },
 ];
 
-const scenarioPayloads: Record<string, { staff_growth_pct?: number; budget_change_pct?: number; scholarship_change_pct?: number }> = {
-  student_growth: { staff_growth_pct: 8, budget_change_pct: 5 },
-  tuition_scholarship: { scholarship_change_pct: 6, budget_change_pct: -3 },
-  new_program: { staff_growth_pct: 12, budget_change_pct: 7 },
-  economic_risk: { budget_change_pct: -8, scholarship_change_pct: 2 },
-};
-
 const configurableSections = [
   { id: "academic-performance-center", label: "Akademik Performans Merkezi" },
   { id: "academic-personnel", label: "Akademik Personel" },
@@ -49,20 +40,25 @@ const configurableSections = [
 ] as const;
 
 const defaultVisibleSections = configurableSections.reduce<Record<string, boolean>>((acc, section) => {
-  acc[section.id] = true;
+  acc[section.id] = !["resource-strips", "strategic-monitoring"].includes(section.id);
   return acc;
 }, {});
 
 const defaultSectionSpans = configurableSections.reduce<Record<string, number>>((acc, section) => {
-  acc[section.id] = 12;
+  const map: Record<string, number> = {
+    "academic-performance-center": 12,
+    "academic-personnel": 6,
+    "academic-performance": 3,
+    "faculty-analysis": 3,
+    "resource-strips": 12,
+    "program-sustainability": 12,
+    "strategic-monitoring": 12,
+    "finance-analysis": 7,
+    "benchmark-area": 5,
+  };
+  acc[section.id] = map[section.id] ?? 12;
   return acc;
 }, {});
-
-const sectionSizeLabels: Record<"wide" | "standard" | "compact", string> = {
-  wide: "Genis",
-  standard: "Standart",
-  compact: "Kompakt",
-};
 
 function slugify(value: string) {
   return value.toLowerCase().replaceAll("%", "pct").replaceAll(" ", "-").replaceAll("_", "-").replaceAll("/", "-");
@@ -106,19 +102,108 @@ function MiniBars({ items }: { items: Array<{ label: string; value: number }> })
 
 function TrendColumns({ items }: { items: Array<{ label: string; value: number }> }) {
   const max = Math.max(...items.map((item) => item.value), 1);
+  const linePath = items
+    .map((item, index) => {
+      const x = 48 + index * 94;
+      const y = 210 - (item.value / max) * 150;
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
   return (
     <div className={styles.trendColumns}>
+      <svg viewBox="0 0 520 240" className={styles.trendSvg} role="img" aria-label="Combo trend">
+        <defs>
+          <linearGradient id="dashboardTrendGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ffc85a" />
+            <stop offset="100%" stopColor="#7ec1ff" />
+          </linearGradient>
+        </defs>
+        {items.map((item, index) => {
+          const x = 24 + index * 94;
+          const barHeight = Math.max(34, (item.value / max) * 150);
+          const y = 210 - barHeight;
+          const lineY = 210 - (item.value / max) * 150;
+          return (
+            <g key={item.label}>
+              <rect x={x} y={y} width={48} height={barHeight} rx={18} className={styles.trendBar} fill="url(#dashboardTrendGradient)" />
+              <circle cx={x + 24} cy={lineY} r={5} className={styles.trendMarker} />
+              <text x={x + 24} y={232} textAnchor="middle" className={styles.trendAxisLabel}>{item.label}</text>
+            </g>
+          );
+        })}
+        <path d={linePath} className={styles.trendLine} />
+      </svg>
+    </div>
+  );
+}
+
+
+function ScoreMatrix({ items }: { items: Array<{ label: string; value: number }> }) {
+  const max = Math.max(...items.map((item) => item.value), 1);
+  return (
+    <div className={styles.scoreMatrix}>
       {items.map((item) => (
-        <div key={item.label} className={styles.trendColumn}>
-          <div
-            className={styles.trendBar}
-            style={{ height: `${Math.max(24, (item.value / max) * 180)}px` }}
-            title={`${item.label}: ${item.value}`}
-          />
-          <span>{item.label}</span>
+        <div key={item.label} className={styles.scoreMatrixRow}>
+          <div>
+            <strong>{item.label}</strong>
+          </div>
+          <div className={styles.scoreMatrixTrack}>
+            <div className={styles.scoreMatrixFill} style={{ width: `${(item.value / max) * 100}%` }} />
+          </div>
+          <span>{item.value}</span>
         </div>
       ))}
     </div>
+  );
+}
+
+function RiskMetricRail({ items }: { items: AcademicPerformanceCenterResponse["metrics"] }) {
+  const filtered = items.filter((item) => item.status !== "healthy");
+  return (
+    <div className={styles.riskMetricRail}>
+      {filtered.map((item) => (
+        <Link
+          key={item.code}
+          href={getInsightHref("metric", item.code)}
+          className={`${styles.riskMetricCard} ${styles.interactiveCard} ${getStatusPulse(item.status)}`}
+        >
+          <strong>{item.label}</strong>
+          <span>{item.value}</span>
+          <small>{item.delta}</small>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function ExecutiveSparkline({ items }: { items: Array<{ label: string; value: number }> }) {
+  const max = Math.max(...items.map((item) => item.value), 1);
+  const width = 260;
+  const height = 72;
+  const linePath = items
+    .map((item, index) => {
+      const x = 16 + (index * (width - 32)) / Math.max(items.length - 1, 1);
+      const y = height - 14 - (item.value / max) * 38;
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className={styles.executiveSparkline} role="img" aria-label="Executive sparkline">
+      <defs>
+        <linearGradient id="executiveSparklineStroke" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#7ec1ff" />
+          <stop offset="100%" stopColor="#74ddc3" />
+        </linearGradient>
+      </defs>
+      {items.map((item, index) => {
+        const x = 16 + (index * (width - 32)) / Math.max(items.length - 1, 1);
+        const y = height - 14 - (item.value / max) * 38;
+        return <circle key={item.label} cx={x} cy={y} r={3.5} className={styles.executiveSparkPoint} />;
+      })}
+      <path d={linePath} className={styles.executiveSparkPath} />
+    </svg>
   );
 }
 
@@ -160,13 +245,15 @@ export function DashboardClient({
   academicCenter: AcademicPerformanceCenterResponse;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [scenarioResult, setScenarioResult] = useState<ScenarioRunResponse | null>(null);
-  const [loadingScenario, setLoadingScenario] = useState<string | null>(null);
-  const [scenarioError, setScenarioError] = useState<string | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [visibleSections, setVisibleSections] = useState<Record<string, boolean>>(defaultVisibleSections);
   const [sectionSpans, setSectionSpans] = useState<Record<string, number>>(defaultSectionSpans);
   const [sectionRowSpans, setSectionRowSpans] = useState<Record<string, number>>({});
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const executiveScore = Math.round(summary.faculty_scores.reduce((acc, item) => acc + item.value, 0) / Math.max(summary.faculty_scores.length, 1));
+  const watchCount = academicCenter.metrics.filter((metric) => metric.status === "watch").length + summary.source_health.filter((source) => source.status.toLowerCase() === "watch").length;
+  const riskCount = summary.alerts.filter((alert) => alert.level.toLowerCase() === "high").length;
+  const alertCoverage = Math.max(100 - riskCount * 9 - watchCount * 4, 58);
 
   useEffect(() => {
     try {
@@ -238,552 +325,57 @@ export function DashboardClient({
     });
   }
 
-  async function handleScenarioRun(scenarioType: string) {
-    setLoadingScenario(scenarioType);
-    setScenarioError(null);
-    try {
-      const result = await runScenario({
-        scenario_type: scenarioType,
-        academic_year: summary.academic_year,
-        ...scenarioPayloads[scenarioType],
-      });
-      setScenarioResult(result);
-    } catch (error) {
-      setScenarioError(error instanceof Error ? error.message : "Senaryo calistirilamadi.");
-    } finally {
-      setLoadingScenario(null);
-    }
-  }
-
-  function getPresetSpan(preset: "compact" | "standard" | "wide") {
-    if (preset === "compact") {
-      return 4;
-    }
-    if (preset === "standard") {
-      return 6;
-    }
-    return 12;
-  }
-
-  function getSpanLabel(span: number) {
-    if (span <= 4) {
-      return "compact";
-    }
-    if (span <= 8) {
-      return "standard";
-    }
-    return "wide";
-  }
-
-  function renderSectionShell(sectionId: string, title: string, content: ReactNode) {
-    const effectiveSpan = sectionSpans[sectionId] ?? 12;
-    const activePreset = getSpanLabel(effectiveSpan);
-
-    return (
-      <div
-        key={sectionId}
-        id={sectionId}
-        className={styles.layoutSection}
-        data-section-id={sectionId}
-        ref={(node) => {
-          sectionRefs.current[sectionId] = node;
-        }}
-        style={{
-          ["--section-span" as string]: effectiveSpan,
-          ["--section-row-span" as string]: sectionRowSpans[sectionId] ?? 24,
-        }}
-      >
-        {content}
-      </div>
-    );
-  }
-
   const settingsPanel = (
-    <article className={styles.panel}>
+    <article className={`${styles.panel} ${styles.settingsFlyout}`}>
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.sectionLabel}>Ayarlar</p>
-          <h3>Kokpit Konfigurasyonu</h3>
+          <h3>Kokpit Ayarlari</h3>
         </div>
+        <button type="button" className={styles.assistantClose} onClick={() => setIsSettingsOpen(false)}>
+          Kapat
+        </button>
       </div>
-      <div className={styles.settingsList}>
-        <div className={styles.settingsControlCard}>
-          <strong>Canli dashboard bilesenleri</strong>
-          <small>Kullanici icin onemli bloklari dashboard'a ekleyin veya gizleyin.</small>
-          <div className={styles.toggleGrid}>
-            {configurableSections.map((section) => (
-              <button
-                key={section.id}
-                type="button"
-                className={visibleSections[section.id] ? styles.toggleOn : styles.toggleOff}
-                onClick={() => toggleSection(section.id)}
-              >
-                {section.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className={styles.settingsControlCard}>
-          <strong>Blok boyut profilleri</strong>
-          <small>Her dashboard blogu icin kompakt, standart veya genis yerlesim secin.</small>
-          <div className={styles.sectionSizeList}>
-            {configurableSections.map((section) => (
-              <div key={section.id} className={styles.sectionSizeRow}>
-                <span>{section.label}</span>
-                <div className={styles.sizeControls}>
-                  {(["compact", "standard", "wide"] as const).map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      className={getSpanLabel(sectionSpans[section.id] ?? 12) === size ? styles.toggleOn : styles.toggleOff}
-                      onClick={() => updateSectionSpan(section.id, getPresetSpan(size))}
-                    >
-                      {sectionSizeLabels[size]}
-                    </button>
-                  ))}
-                </div>
+      <div className={styles.settingsFlyoutBody}>
+        <div className={styles.utilityCard}>
+          <strong>Gorunum Ayarlari</strong>
+          <small>Hangi birlesik modullerin dashboardda kalacagini secin.</small>
+          <div className={styles.settingsToggleList}>
+            {configurableSections.filter((section) => !["resource-strips", "strategic-monitoring"].includes(section.id)).map((section) => (
+              <div key={section.id} className={styles.settingsToggleRow}>
+                <button
+                  type="button"
+                  className={visibleSections[section.id] ? styles.toggleOn : styles.toggleOff}
+                  onClick={() => toggleSection(section.id)}
+                >
+                  {section.label}
+                </button>
+                <small>{visibleSections[section.id] ? "Gorunur" : "Gizli"}</small>
               </div>
             ))}
           </div>
         </div>
-
-        <div className={styles.noteCard}>
-          <strong>Gosterge agirliklari</strong>
-          <small>Bolum bazli KPI agirliklari admin panelinden yonetilecek sekilde tasarlandi.</small>
-        </div>
-        <div className={styles.noteCard}>
-          <strong>Veri yenileme profili</strong>
-          <small>YOKSIS, dosya yukleme ve warehouse batch akislari ayri izleniyor.</small>
+        <div className={styles.utilityCard}>
+          <strong>Veri Yenileme</strong>
+          <small>YOKSIS, dosya yukleme ve warehouse batch akis profilleri birlikte izleniyor.</small>
+          <div className={styles.utilityMeta}>
+            <span>Warehouse Live</span>
+            <span>Excel / JSON</span>
+            <span>Mock Fallback</span>
+          </div>
         </div>
       </div>
     </article>
   );
 
-  const sectionRegistry: Record<string, { title: string; content: ReactNode }> = {
-    "academic-performance-center": {
-      title: "Akademik Performans Merkezi",
-      content: (
-        <section className={styles.performanceCenter}>
-          <div className={styles.performanceCenterHeader}>
-            <div>
-              <p className={styles.sectionLabel}>Akademik Performans Merkezi</p>
-              <h3>Akademik uretkenlik, proje ve stratejik hedef gorunumu</h3>
-            </div>
-            <span className={styles.centerMeta}>
-              {academicCenter.source_mode === "warehouse_live" ? "Canli warehouse akisi" : "Mock fallback modu"}
-            </span>
-          </div>
-          <div className={styles.compactKpiGrid}>
-            {academicCenter.metrics.map((kpi) => (
-              <Link
-                key={kpi.code}
-                href={getInsightHref("metric", kpi.code)}
-                className={`${styles.kpiCard} ${styles.interactiveCard} ${getStatusPulse(kpi.status)}`}
-              >
-                <p>{kpi.label}</p>
-                <h3>{kpi.value}</h3>
-                <div className={styles.kpiMeta}>
-                  <span>{kpi.delta}</span>
-                  <span className={styles[`status_${kpi.status}`]}>{kpi.status}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ),
-    },
-    "academic-personnel": {
-      title: "Akademik Personel",
-      content: (
-        <section className={styles.primaryGrid}>
-          <article className={`${styles.panel} ${styles.heroPanel}`}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Trend</p>
-                <h3>Yillik Yayin Egilimi</h3>
-              </div>
-              <span>2022-2026</span>
-            </div>
-            <TrendColumns items={summary.publication_trend} />
-          </article>
-
-          <article className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Karsilastirma</p>
-                <h3>Fakulte Performans Skorlari</h3>
-              </div>
-            </div>
-            <MiniBars items={summary.faculty_scores} />
-          </article>
-
-          <article id="risk-early-warning" className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Risk</p>
-                <h3>Kritik Uyarilar</h3>
-              </div>
-            </div>
-            <div className={styles.alertStack}>
-              {summary.alerts.map((alert) => (
-                <Link
-                  key={alert.id}
-                  href={getInsightHref("alert", alert.id)}
-                  className={`${styles.alertCard} ${styles.interactiveCard} ${getStatusPulse(alert.level)}`}
-                >
-                  <div className={styles.alertHeader}>
-                    <span className={styles[`level_${alert.level.toLowerCase()}`]}>{alert.level}</span>
-                    <strong>{alert.owner}</strong>
-                  </div>
-                  <p>{alert.title}</p>
-                  <small>{alert.action}</small>
-                </Link>
-              ))}
-            </div>
-          </article>
-        </section>
-      ),
-    },
-    "academic-performance": {
-      title: "Akademik Performans",
-      content: (
-        <section className={styles.secondaryGrid}>
-          <article className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Ogrenci Analizi</p>
-                <h3>Toplam Ogrenci Degisim Trendi</h3>
-              </div>
-            </div>
-            <TrendColumns items={summary.student_trend} />
-          </article>
-
-          <article className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Programlar</p>
-                <h3>Doluluk Orani Trendi</h3>
-              </div>
-            </div>
-            <MiniBars items={summary.occupancy_trend} />
-          </article>
-
-          <article className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Mezuniyet</p>
-                <h3>Mezuniyet Orani</h3>
-              </div>
-            </div>
-            <MiniBars items={summary.graduation_trend} />
-          </article>
-        </section>
-      ),
-    },
-    "faculty-analysis": {
-      title: "Fakulte ve Bolum Analizi",
-      content: (
-        <section className={styles.secondaryGrid}>
-          <article className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Liderlik Tablosu</p>
-                <h3>En Yuksek Performansli Akademisyenler</h3>
-              </div>
-              <span>Detay sayfasina gidin</span>
-            </div>
-            <div className={styles.leaderboard}>
-              {summary.top_performers.map((person) => (
-                <Link
-                  key={person.academic_id}
-                  href={getInsightHref("leader", person.academic_id)}
-                  className={`${styles.leaderRow} ${styles.interactiveCard} ${person.change < 0 ? styles.pulseRisk : ""}`}
-                >
-                  <div>
-                    <strong>{person.name}</strong>
-                    <span>{person.title} | {person.department}</span>
-                  </div>
-                  <div className={styles.leaderMetrics}>
-                    <strong>{person.score}</strong>
-                    <span className={person.change < 0 ? styles.negativeDelta : ""}>{person.change >= 0 ? "+" : ""}{person.change}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </article>
-
-          <article id="academic-collaboration" className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Dagilim</p>
-                <h3>Akademik Cikti Turu</h3>
-              </div>
-            </div>
-            <MiniBars items={summary.work_distribution} />
-          </article>
-
-          <article id="data-quality" className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Senkronizasyon</p>
-                <h3>Veri Kaynagi Sagligi</h3>
-              </div>
-            </div>
-            <div className={styles.sourceList}>
-              {summary.source_health.map((source) => (
-                <Link
-                  key={source.source}
-                  href={getInsightHref("source", source.source)}
-                  className={`${styles.sourceRow} ${styles.interactiveCard} ${source.status.toLowerCase() === "watch" ? styles.pulseWatch : ""}`}
-                >
-                  <div>
-                    <strong>{source.source}</strong>
-                    <span>{source.detail}</span>
-                  </div>
-                  <div className={styles.sourceMeta}>
-                    <strong>{source.status}</strong>
-                    <small>{source.freshness}</small>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </article>
-        </section>
-      ),
-    },
-    "resource-strips": {
-      title: "Kaynak Gosterge Setleri",
-      content: (
-        <section className={styles.tertiaryGrid}>
-          <MetricStrip title="Stratejik Egitim ve Ogrenci Gostergeleri" items={summary.student_metrics} prefix="student" />
-          <MetricStrip title="Stratejik Mali Gostergeler" items={summary.finance_metrics} prefix="finance" />
-          <MetricStrip title="Fiziksel Kaynak ve Kapasite Gostergeleri" items={summary.capacity_metrics} prefix="capacity" />
-        </section>
-      ),
-    },
-    "program-sustainability": {
-      title: "Program Surdurulebilirlik",
-      content: (
-        <section className={styles.tertiaryGrid}>
-          <article className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Program Surdurulebilirlik</p>
-                <h3>Program Karar Matrisi</h3>
-              </div>
-            </div>
-            <div className={styles.programTable}>
-              {summary.program_health.map((program) => (
-                <div key={program.program_code} className={styles.programRow}>
-                  <div>
-                    <strong>{program.program_name}</strong>
-                    <span>{program.action_label}</span>
-                  </div>
-                  <div className={styles.programMetrics}>
-                    <span>Talep {program.demand_index}</span>
-                    <span>Doluluk %{program.occupancy_rate}</span>
-                    <span>Mezuniyet %{program.graduation_rate}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article id="framework-indicators" className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Benchmark</p>
-                <h3>THE, QS ve YOK Hazirlik</h3>
-              </div>
-            </div>
-            <MiniBars items={summary.readiness_scores} />
-            <div className={styles.readinessNotes}>
-              {summary.readiness_details.map((item) => (
-                <div key={item.framework} className={styles.noteCard}>
-                  <strong>{item.framework}</strong>
-                  <span>Hazirlik %{item.data_readiness_pct} | Gap {item.benchmark_gap}</span>
-                  <small>{item.note}</small>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Fiziksel Kaynak</p>
-                <h3>Kapasite Kullanim Oranlari</h3>
-              </div>
-            </div>
-            <MiniBars items={summary.capacity_utilization} />
-          </article>
-        </section>
-      ),
-    },
-    "strategic-monitoring": {
-      title: "Stratejik Izleme",
-      content: (
-        <section className={styles.tertiaryGrid}>
-          <article className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Stratejik Plan</p>
-                <h3>Hedef Gerceklesme Izleme</h3>
-              </div>
-            </div>
-            <div className={styles.goalList}>
-              {summary.strategic_goals.map((goal) => (
-                <div key={goal.code} className={styles.goalRow}>
-                  <div>
-                    <strong>{goal.title}</strong>
-                    <span>{goal.owner}</span>
-                  </div>
-                  <div className={styles.goalMeta}>
-                    <strong>{goal.current_value}</strong>
-                    <small>Hedef {goal.target_value}</small>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article id="scenario-center" className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Senaryo Merkezi</p>
-                <h3>What-if Senaryo Kokpiti</h3>
-              </div>
-            </div>
-            <div className={styles.scenarioList}>
-              {summary.scenario_templates.map((scenario) => (
-                <button
-                  key={scenario.scenario_type}
-                  type="button"
-                  className={styles.scenarioActionCard}
-                  onClick={() => void handleScenarioRun(scenario.scenario_type)}
-                  disabled={loadingScenario !== null}
-                >
-                  <strong>{scenario.title}</strong>
-                  <span>{scenario.key_driver}</span>
-                  <small>{scenario.description}</small>
-                  <em>
-                    {loadingScenario === scenario.scenario_type ? "Calisiyor..." : "Senaryoyu Uygula"}
-                  </em>
-                </button>
-              ))}
-            </div>
-            {scenarioError ? <p className={styles.errorText}>{scenarioError}</p> : null}
-            {scenarioResult ? (
-              <div className={styles.scenarioResult}>
-                <div className={styles.resultHeader}>
-                  <strong>{scenarioResult.title}</strong>
-                  <span>{scenarioResult.scenario_id}</span>
-                </div>
-                <p>{scenarioResult.summary}</p>
-                <div className={styles.resultGrid}>
-                  <div className={styles.resultColumn}>
-                    <h4>Baseline</h4>
-                    {scenarioResult.baseline.map((kpi) => (
-                      <div key={kpi.code} className={styles.resultRow}>
-                        <span>{kpi.label}</span>
-                        <strong>{kpi.value}</strong>
-                      </div>
-                    ))}
-                  </div>
-                  <div className={styles.resultColumn}>
-                    <h4>Projected</h4>
-                    {scenarioResult.projected.map((kpi) => (
-                      <div key={kpi.code} className={styles.resultRow}>
-                        <span>{kpi.label}</span>
-                        <strong>{kpi.value}</strong>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-          </article>
-
-          <article className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Risk Matrisi</p>
-                <h3>Erken Uyari ve Kritik Riskler</h3>
-              </div>
-            </div>
-            <div className={styles.riskList}>
-              {summary.risk_matrix.map((risk) => (
-                <div key={risk.risk_id} className={styles.noteCard}>
-                  <strong>{risk.title}</strong>
-                  <span>{risk.category} | P {risk.probability} | I {risk.impact}</span>
-                  <small>{risk.mitigation}</small>
-                </div>
-              ))}
-            </div>
-          </article>
-        </section>
-      ),
-    },
-    "finance-analysis": {
-      title: "Mali Analiz",
-      content: (
-        <section className={styles.financeSection}>
-          <article className={`${styles.panel} ${styles.financePanel}`}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Mali Analiz</p>
-                <h3>Sentetik Butce ve Gelir-Gider Gorunumu</h3>
-              </div>
-              <span>{finance.academic_year}</span>
-            </div>
-            <div className={styles.financeKpis}>
-              {finance.kpis.map((kpi) => (
-                <Link
-                  key={kpi.label}
-                  href={getInsightHref("finance-kpi", kpi.label)}
-                  className={`${styles.financeKpiCard} ${styles.interactiveCard} ${getStatusPulse(kpi.status)}`}
-                >
-                  <strong>{kpi.label}</strong>
-                  <span>{kpi.value}</span>
-                  <small>{kpi.delta}</small>
-                </Link>
-              ))}
-            </div>
-            <div className={styles.financeCharts}>
-              <div>
-                <h4>Gelir Karmasi</h4>
-                <MiniBars items={finance.revenue_mix} />
-              </div>
-              <div>
-                <h4>Gider Karmasi</h4>
-                <MiniBars items={finance.expense_mix} />
-              </div>
-              <div>
-                <h4>Butce Sapmasi</h4>
-                <MiniBars items={finance.budget_variance} />
-              </div>
-            </div>
-          </article>
-        </section>
-      ),
-    },
-    "benchmark-area": {
-      title: "Benchmark ve Karsilastirma",
-      content: (
-        <section className={styles.secondaryGrid}>
-          <article className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Karsilastirma</p>
-                <h3>Universite Benchmark Skorlari</h3>
-              </div>
-            </div>
-            <MiniBars items={summary.benchmark_comparison} />
-          </article>
-        </section>
-      ),
-    },
+  const show = {
+    center: visibleSections["academic-performance-center"],
+    leadership: visibleSections["academic-personnel"],
+    risk: visibleSections["academic-performance"],
+    faculty: visibleSections["faculty-analysis"],
+    finance: visibleSections["finance-analysis"],
+    benchmark: visibleSections["benchmark-area"],
+    strategy: visibleSections["program-sustainability"],
   };
 
   return (
@@ -808,16 +400,43 @@ export function DashboardClient({
         </div>
 
         <nav className={styles.navList}>
-          {sidebarItems.map((item, index) => (
-            <a
-              key={item.id}
-              href={`#${item.id}`}
-              className={index === 0 ? styles.activeNavItem : styles.navItem}
-              title={item.label}
-            >
-              {sidebarOpen ? item.label : item.label.slice(0, 2)}
-            </a>
-          ))}
+          {sidebarItems.map((item, index) => {
+            const className = index === 0 ? styles.activeNavItem : styles.navItem;
+            const label = sidebarOpen ? item.label : item.label.slice(0, 2);
+
+            if (item.id === "scenario-center") {
+              return (
+                <Link key={item.id} href="/scenario-center" className={className} title={item.label}>
+                  {label}
+                </Link>
+              );
+            }
+
+            if (item.id === "settings") {
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={className}
+                  title={item.label}
+                  onClick={() => setIsSettingsOpen((current) => !current)}
+                >
+                  {label}
+                </button>
+              );
+            }
+
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className={className}
+                title={item.label}
+              >
+                {label}
+              </a>
+            );
+          })}
         </nav>
 
         {sidebarOpen ? (
@@ -830,31 +449,338 @@ export function DashboardClient({
 
       <section className={styles.content}>
         <header id="executive-summary" className={styles.topbar}>
-          <div>
-            <p className={styles.sectionLabel}>Yonetici Gostergesi</p>
-            <h2>Akademik Personel Performansi ve Stratejik Izleme Cockpit'i</h2>
-            <p className={styles.topbarText}>
-              Son senkron: {summary.last_sync} | Kritik uyari: {summary.critical_alert_count}
-            </p>
+          <div className={styles.topbarMain}>
+            <div>
+              <p className={styles.sectionLabel}>Yonetici Gostergesi</p>
+              <h2>Akademik Personel Performansi ve Stratejik Izleme Cockpit&apos;i</h2>
+              <p className={styles.topbarText}>
+                Son senkron: {summary.last_sync} | Kritik uyari: {summary.critical_alert_count}
+              </p>
+            </div>
+            <div className={styles.filterChips}>
+              <span>{academicCenter.period || summary.academic_year}</span>
+              <span>{academicCenter.faculty || summary.selected_faculty}</span>
+              <span>{summary.selected_department}</span>
+              <span>{academicCenter.source_mode === "warehouse_live" ? "Warehouse Live" : "Mock Fallback"}</span>
+            </div>
+            <div className={styles.topbarSignalStrip}>
+              <div className={styles.signalBand}>
+                <small>Yayin momentumu</small>
+                <ExecutiveSparkline items={summary.publication_trend} />
+              </div>
+              <div className={styles.signalBand}>
+                <small>Alarm kapsama skoru</small>
+                <strong>%{alertCoverage}</strong>
+                <span>Risk, watch ve veri akisi birlikte normalize edilir.</span>
+              </div>
+            </div>
           </div>
-          <div className={styles.filterChips}>
-            <span>{academicCenter.period || summary.academic_year}</span>
-            <span>{academicCenter.faculty || summary.selected_faculty}</span>
-            <span>{summary.selected_department}</span>
-            <span>{academicCenter.source_mode === "warehouse_live" ? "Warehouse Live" : "Mock Fallback"}</span>
+          <div className={styles.executiveRail}>
+            <div className={styles.executiveMiniCard}>
+              <small>Genel skor</small>
+              <strong>{executiveScore}</strong>
+              <span>Fakulte ortalamasi</span>
+            </div>
+            <div className={`${styles.executiveMiniCard} ${watchCount > 0 ? styles.pulseWatch : ""}`}>
+              <small>Watch</small>
+              <strong>{watchCount}</strong>
+              <span>Izlenen sinyal</span>
+            </div>
+            <div className={`${styles.executiveMiniCard} ${riskCount > 0 ? styles.pulseRisk : ""}`}>
+              <small>Risk</small>
+              <strong>{riskCount}</strong>
+              <span>Kritik akis</span>
+            </div>
           </div>
         </header>
 
-        <div className={styles.dashboardFlow}>
-          {configurableSections
-            .map((section) => section.id)
-            .filter((sectionId) => visibleSections[sectionId])
-            .map((sectionId) => renderSectionShell(sectionId, sectionRegistry[sectionId].title, sectionRegistry[sectionId].content))}
+        <section className={styles.masterCockpit}>
+          {show.center ? (
+            <section id="academic-performance-center" className={styles.compactKpiSection}>
+              <div className={styles.compactKpiHeader}>
+                <div>
+                  <p className={styles.sectionLabel}>Akademik Performans Merkezi</p>
+                  <h3>Akademik uretkenlik, proje ve stratejik hedef gorunumu</h3>
+                </div>
+                <span className={styles.centerMeta}>
+                  {academicCenter.source_mode === "warehouse_live" ? "Canli warehouse akisi" : "Mock fallback modu"}
+                </span>
+              </div>
+              <div className={styles.compactKpiRow}>
+                {academicCenter.metrics.map((kpi) => (
+                  <Link
+                    key={kpi.code}
+                    href={getInsightHref("metric", kpi.code)}
+                    className={`${styles.kpiCard} ${styles.interactiveCard} ${getStatusPulse(kpi.status)}`}
+                  >
+                    <p>{kpi.label}</p>
+                    <h3>{kpi.value}</h3>
+                    <div className={styles.kpiMeta}>
+                      <span>{kpi.delta}</span>
+                      <span className={styles[`status_${kpi.status}`]}>{kpi.status}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
-          <div id="settings" className={styles.layoutSection} style={{ ["--section-span" as string]: 12 }}>
-            {settingsPanel}
-          </div>
+          <section className={styles.cockpitMainGrid}>
+            {show.leadership ? (
+              <article id="academic-personnel" className={`${styles.panel} ${styles.masterLeadershipPanel}`}>
+                <div className={styles.panelHeader}>
+                  <div>
+                    <p className={styles.sectionLabel}>Liderlik Sinyalleri</p>
+                    <h3>En Yuksek Performansli Akademisyenler</h3>
+                  </div>
+                  <span>Detay sayfasina gidin</span>
+                </div>
+                <div className={styles.masterLeadershipTop}>
+                  <div className={styles.masterTrendMini}>
+                    <TrendColumns items={summary.publication_trend} />
+                  </div>
+                  <div className={styles.masterLeadershipNote}>
+                    <strong>Bu ana panel dashboardun odak noktasi.</strong>
+                    <span>Akademik liderlik, etki dalgalanmasi ve dusus sinyalleri ayni blokta okunur.</span>
+                  </div>
+                </div>
+                <div className={styles.leaderboard}>
+                  {summary.top_performers.map((person) => (
+                    <Link
+                      key={person.academic_id}
+                      href={getInsightHref("leader", person.academic_id)}
+                      className={`${styles.leaderRow} ${styles.interactiveCard} ${person.change < 0 ? styles.pulseRisk : ""}`}
+                    >
+                      <div>
+                        <strong>{person.name}</strong>
+                        <span>{person.title} | {person.department}</span>
+                      </div>
+                      <div className={styles.leaderMetrics}>
+                        <strong>{person.score}</strong>
+                        <span className={person.change < 0 ? styles.negativeDelta : ""}>{person.change >= 0 ? "+" : ""}{person.change}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </article>
+            ) : null}
+
+            <div className={styles.cockpitSideRail}>
+              {show.faculty ? (
+                <article id="faculty-analysis" className={styles.panel}>
+                  <div className={styles.panelHeader}>
+                    <div>
+                      <p className={styles.sectionLabel}>Fakulte ve Bolum Analizi</p>
+                      <h3>Fakulte Performans Matrisi</h3>
+                    </div>
+                  </div>
+                  <ScoreMatrix items={summary.faculty_scores} />
+                </article>
+              ) : null}
+
+              {show.risk ? (
+                <article id="risk-early-warning" className={styles.panel}>
+                  <div className={styles.panelHeader}>
+                    <div>
+                      <p className={styles.sectionLabel}>Risk Corridor</p>
+                      <h3>Kritik Uyarilar</h3>
+                    </div>
+                  </div>
+                  <div className={styles.alertStack}>
+                    {summary.alerts.map((alert) => (
+                      <Link
+                        key={alert.id}
+                        href={getInsightHref("alert", alert.id)}
+                        className={`${styles.alertCard} ${styles.interactiveCard} ${getStatusPulse(alert.level)}`}
+                      >
+                        <div className={styles.alertHeader}>
+                          <span className={styles[`level_${alert.level.toLowerCase()}`]}>{alert.level}</span>
+                          <strong>{alert.owner}</strong>
+                        </div>
+                        <p>{alert.title}</p>
+                        <small>{alert.action}</small>
+                      </Link>
+                    ))}
+                  </div>
+                  <div className={styles.watchChipRail}>
+                    {academicCenter.metrics.filter((item) => item.status !== "healthy").slice(0, 2).map((item) => (
+                      <Link
+                        key={item.code}
+                        href={getInsightHref("metric", item.code)}
+                        className={`${styles.riskMetricCard} ${styles.interactiveCard} ${getStatusPulse(item.status)}`}
+                      >
+                        <strong>{item.label}</strong>
+                        <span>{item.value}</span>
+                        <small>{item.delta}</small>
+                      </Link>
+                    ))}
+                  </div>
+                </article>
+              ) : null}
+            </div>
+          </section>
+
+          <section className={styles.cockpitBottomGrid}>
+            {show.finance ? (
+              <article id="finance-analysis" className={`${styles.panel} ${styles.financePanelCompact}`}>
+                <div className={styles.panelHeader}>
+                  <div>
+                    <p className={styles.sectionLabel}>Mali Analiz</p>
+                    <h3>Gelir, gider, sapma ve kapasite</h3>
+                  </div>
+                  <span>{finance.academic_year}</span>
+                </div>
+                <div className={styles.financeKpis}>
+                  {finance.kpis.map((kpi) => (
+                    <Link
+                      key={kpi.label}
+                      href={getInsightHref("finance-kpi", kpi.label)}
+                      className={`${styles.financeKpiCard} ${styles.interactiveCard} ${getStatusPulse(kpi.status)}`}
+                    >
+                      <strong>{kpi.label}</strong>
+                      <span>{kpi.value}</span>
+                      <small>{kpi.delta}</small>
+                    </Link>
+                  ))}
+                </div>
+                <div className={styles.financeCharts}>
+                  <div>
+                    <h4>Gelir Karmasi</h4>
+                    <MiniBars items={finance.revenue_mix} />
+                  </div>
+                  <div>
+                    <h4>Gider Karmasi</h4>
+                    <MiniBars items={finance.expense_mix} />
+                  </div>
+                  <div>
+                    <h4>Butce Sapmasi</h4>
+                    <MiniBars items={finance.budget_variance} />
+                  </div>
+                  <div>
+                    <h4>Kapasite Kullanimi</h4>
+                    <MiniBars items={summary.capacity_utilization} />
+                  </div>
+                </div>
+              </article>
+            ) : null}
+
+            {show.benchmark ? (
+              <article id="benchmark-area" className={`${styles.panel} ${styles.benchmarkCompactPanel}`}>
+                <div className={styles.panelHeader}>
+                  <div>
+                    <p className={styles.sectionLabel}>Benchmark + Data Trust</p>
+                    <h3>Benchmark, veri sagligi ve AI tetik</h3>
+                  </div>
+                </div>
+                <div className={styles.benchmarkCompactGrid}>
+                  <div className={styles.noteCard}>
+                    <strong>Universite Benchmark</strong>
+                    <MiniBars items={summary.benchmark_comparison} />
+                  </div>
+                  <div className={styles.noteCard}>
+                    <strong>Veri Kaynagi Sagligi</strong>
+                    <div className={styles.sourceList}>
+                      {summary.source_health.map((source) => (
+                        <Link
+                          key={source.source}
+                          href={getInsightHref("source", source.source)}
+                          className={`${styles.sourceRow} ${styles.interactiveCard} ${source.status.toLowerCase() === "watch" ? styles.pulseWatch : ""}`}
+                        >
+                          <div>
+                            <strong>{source.source}</strong>
+                            <span>{source.detail}</span>
+                          </div>
+                          <div className={styles.sourceMeta}>
+                            <strong>{source.status}</strong>
+                            <small>{source.freshness}</small>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={styles.noteCard}>
+                    <strong>AI Analiz Tetikleri</strong>
+                    <div className={styles.promptStack}>
+                      {summary.assistant_prompts.slice(0, 2).map((prompt) => (
+                        <span key={prompt}>{prompt}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={styles.noteCard}>
+                    <strong>Kokpit Durumu</strong>
+                    <span>Watch akis: {watchCount}</span>
+                    <span>Risk akis: {riskCount}</span>
+                    <small>Erken uyari, veri kalitesi ve KPI sinyalleri tek noktada okunur.</small>
+                  </div>
+                </div>
+              </article>
+            ) : null}
+          </section>
+
+          {show.strategy ? (
+            <section id="framework-indicators" className={styles.strategyStripShell}>
+              <article className={`${styles.panel} ${styles.strategyStripPanel}`}>
+                <div className={styles.panelHeader}>
+                  <div>
+                    <p className={styles.sectionLabel}>Alt Serit</p>
+                    <h3>Program, hedef, benchmark ve kaynak ozetleri</h3>
+                  </div>
+                </div>
+                <div className={styles.strategySummaryGrid}>
+                  <div className={styles.noteCard}>
+                    <strong>Program Matrisi</strong>
+                    <span>{summary.program_health.length} karar sinyali</span>
+                    <small>Buyutulebilir, guclendirilmeli ve desteklenecek programlar tek ozet kartta tutulur.</small>
+                  </div>
+                  <div className={styles.noteCard}>
+                    <strong>THE / QS / YOK</strong>
+                    <span>{summary.readiness_details.length} gap kaydi</span>
+                    <small>Hazirlik oranlari ve benchmark aciklari sadece stratejik ozet seviyesinde kalir.</small>
+                  </div>
+                  <div className={styles.noteCard}>
+                    <strong>Hedef Izleme</strong>
+                    <span>{summary.strategic_goals.length} kritik hedef</span>
+                    <small>Asil detay ayri rapor ekranina gider, dashboardda sadece kritik ilerleme ozetlenir.</small>
+                  </div>
+                  <div className={styles.noteCard}>
+                    <strong>Kaynak Setleri</strong>
+                    <span>3 mini grup</span>
+                    <small>Ogrenci, mali ve kapasite setleri cockpit alt seridinde kompakt sunulur.</small>
+                  </div>
+                  <div className={styles.noteCard}>
+                    <strong>Scenario CTA</strong>
+                    <span>What-if butonu</span>
+                    <small>Senaryo Merkezi ana panellerden cikarildi; hizli eylem olarak tutulur.</small>
+                  </div>
+                  <div className={styles.noteCard}>
+                    <strong>Ayarlar CTA</strong>
+                    <span>Konfigurasyon butonu</span>
+                    <small>Ayarlar buyuk panel olmaz; gorunum ve profil secimi utility dock icine tasinir.</small>
+                  </div>
+                </div>
+              </article>
+            </section>
+          ) : null}
+        </section>
+
+        <div className={styles.cockpitUtilityIcons}>
+          <Link href="/scenario-center" className={styles.cockpitIconButton} title="Senaryo Merkezi">
+            <span>SC</span>
+            <small>Senaryo</small>
+          </Link>
+          <button
+            id="settings"
+            type="button"
+            className={styles.cockpitIconButton}
+            title="Ayarlar"
+            onClick={() => setIsSettingsOpen((current) => !current)}
+          >
+            <span>AY</span>
+            <small>Ayar</small>
+          </button>
         </div>
+
+        {isSettingsOpen ? settingsPanel : null}
 
         <AssistantPanel prompts={summary.assistant_prompts} />
       </section>
