@@ -17,7 +17,7 @@ export function AssistantPanel({ prompts }: Props) {
   const [prompt, setPrompt] = useState(prompts[0] ?? "Bir stratejik soru sorun...");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,7 +46,7 @@ export function AssistantPanel({ prompts }: Props) {
       <div className={styles.assistantHeader}>
         <div className={styles.assistantCopy}>
           <p className={styles.sectionLabel}>AI Stratejik Analiz Asistani</p>
-          <h3>Yeni analiz workspace'i olusturun</h3>
+          <h3>Hizli analiz olusturun</h3>
           <p>
             Ornek soru: “Muhendislik Fakultesinin son uc yillik akademik performansini ve maliyet
             degisimini karsilastir.”
@@ -80,7 +80,7 @@ export function AssistantPanel({ prompts }: Props) {
           <button className={styles.primaryButton} type="submit" disabled={isLoading}>
             {isLoading ? "Analiz Olusturuluyor" : "Analiz Olustur"}
           </button>
-          <span className={styles.helperText}>Yeni sayfada KPI, analiz ve risk panelleri acilir.</span>
+          <span className={styles.helperText}>Ayrintili analiz yeni sayfada acilir.</span>
         </div>
         {error ? <p className={styles.errorText}>{error}</p> : null}
       </form>

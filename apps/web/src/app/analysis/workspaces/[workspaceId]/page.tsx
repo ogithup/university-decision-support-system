@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { fetchDashboardSummary, fetchFinanceSummary, fetchWorkspace } from "../../../../lib/api";
 import styles from "./page.module.css";
 
-
 export default async function WorkspacePage({
   params,
 }: {
@@ -24,13 +23,15 @@ export default async function WorkspacePage({
   const heroKpisSource = [
     summary?.kpis[0],
     summary?.kpis[1],
-    finance?.kpis[0] ? {
-      code: "FINANCE_BALANCE",
-      label: finance.kpis[0].label,
-      value: finance.kpis[0].value,
-      delta: finance.kpis[0].delta,
-      status: finance.kpis[0].status,
-    } : null,
+    finance?.kpis[0]
+      ? {
+          code: "FINANCE_BALANCE",
+          label: finance.kpis[0].label,
+          value: finance.kpis[0].value,
+          delta: finance.kpis[0].delta,
+          status: finance.kpis[0].status,
+        }
+      : null,
     summary?.kpis[7],
   ];
   const heroKpis = heroKpisSource.filter((kpi): kpi is NonNullable<(typeof heroKpisSource)[number]> => Boolean(kpi));
@@ -46,8 +47,9 @@ export default async function WorkspacePage({
   return (
     <main className={styles.page}>
       <Link href="/dashboard" className={styles.backLink}>
-        Dashboard'a Don
+        Dashboard&apos;a Don
       </Link>
+
       <section className={styles.hero}>
         <div>
           <p className={styles.label}>Dinamik Analiz Workspace</p>
@@ -164,7 +166,7 @@ export default async function WorkspacePage({
           <div className={styles.widgetHeader}>
             <div>
               <p className={styles.widgetType}>scenario_cards</p>
-              <h3>Analiz Widget Planı</h3>
+              <h3>Analiz Widget Plani</h3>
             </div>
           </div>
           <div className={styles.widgetList}>

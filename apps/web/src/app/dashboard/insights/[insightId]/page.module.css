@@ -1,13 +1,24 @@
 .page {
+  --bg: #ecf3fb;
+  --bg-2: #f7fbff;
+  --panel: rgba(255, 255, 255, 0.84);
+  --panel-strong: rgba(255, 255, 255, 0.94);
+  --line: rgba(25, 70, 116, 0.12);
+  --text: #173a61;
+  --muted: #6983a3;
+  --gold: #c68d2b;
+  --mint: #45d1b8;
+  --red: #c24e59;
   min-height: 100vh;
-  padding: 28px;
+  padding: 22px 24px 72px;
   background:
-    radial-gradient(circle at top left, rgba(255, 207, 132, 0.32), transparent 22%),
-    radial-gradient(circle at top right, rgba(98, 178, 255, 0.24), transparent 28%),
-    linear-gradient(180deg, #f5f8fc 0%, #edf3fb 100%);
-  color: #14304f;
+    radial-gradient(circle at top left, rgba(255, 199, 112, 0.22), transparent 24%),
+    radial-gradient(circle at top right, rgba(105, 177, 255, 0.24), transparent 28%),
+    linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
+  color: var(--text);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   display: grid;
-  gap: 22px;
+  gap: 18px;
 }
 
 .topActions {
@@ -18,15 +29,46 @@
   padding: 10px 16px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(27, 75, 124, 0.1);
+  border: 1px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.hero,
+.heroValueCard,
+.panel,
+.panelFull,
+.deltaCard,
+.infoRow,
+.alertCard,
+.legendItem,
+.pill,
+.activePill {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  background: linear-gradient(180deg, var(--panel-strong) 0%, var(--panel) 100%);
+  border: 1px solid var(--line);
+  box-shadow: 0 16px 36px rgba(33, 74, 118, 0.08);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.hero:hover,
+.heroValueCard:hover,
+.panel:hover,
+.panelFull:hover,
+.deltaCard:hover,
+.infoRow:hover,
+.alertCard:hover,
+.legendItem:hover,
+.pill:hover,
+.activePill:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 52px rgba(33, 74, 118, 0.14);
 }
 
 .hero {
   padding: 24px;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(27, 75, 124, 0.1);
-  box-shadow: 0 18px 45px rgba(41, 78, 123, 0.08);
   display: flex;
   justify-content: space-between;
   gap: 18px;
@@ -35,15 +77,13 @@
 .hero_watch,
 .state_watch,
 .state_medium {
-  box-shadow: 0 0 0 1px rgba(178, 119, 21, 0.12), 0 0 26px rgba(255, 197, 92, 0.18);
-  animation: pulseWatch 1.8s ease-in-out infinite;
+  box-shadow: 0 0 0 1px rgba(198, 141, 43, 0.16), 0 0 28px rgba(255, 197, 92, 0.18);
 }
 
 .hero_risk,
 .state_risk,
 .state_high {
-  box-shadow: 0 0 0 1px rgba(177, 62, 77, 0.14), 0 0 26px rgba(255, 120, 120, 0.2);
-  animation: pulseRisk 1.45s ease-in-out infinite;
+  box-shadow: 0 0 0 1px rgba(194, 78, 89, 0.18), 0 0 30px rgba(255, 126, 126, 0.2);
 }
 
 .hero h1,
@@ -55,7 +95,7 @@
 
 .sectionLabel {
   margin: 0 0 8px;
-  color: #aa6e12;
+  color: var(--gold);
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 11px;
@@ -69,8 +109,10 @@
 .heroValueCard small,
 .deltaCard small,
 .deltaCard span,
-.alertCard small {
-  color: #5d7594;
+.alertCard small,
+.hero p,
+.legendItem small {
+  color: var(--muted);
 }
 
 .heroMeta {
@@ -78,17 +120,6 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   min-width: 320px;
-}
-
-.heroValueCard,
-.panel,
-.panelFull,
-.deltaCard,
-.infoRow,
-.alertCard {
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(27, 75, 124, 0.1);
 }
 
 .heroValueCard {
@@ -106,7 +137,6 @@
 .panel,
 .panelFull {
   padding: 20px;
-  box-shadow: 0 18px 45px rgba(41, 78, 123, 0.08);
 }
 
 .panelFull {
@@ -125,16 +155,6 @@
   gap: 16px;
 }
 
-.comboPanel {
-  min-height: 100%;
-}
-
-.sourcePanel,
-.breakdownPanel,
-.diagnosticPanel {
-  min-height: 100%;
-}
-
 .comboChart {
   width: 100%;
   height: auto;
@@ -150,15 +170,15 @@
 }
 
 .linePoint {
-  fill: #74ddc3;
+  fill: var(--mint);
   stroke: #ffffff;
   stroke-width: 3;
 }
 
 .axisText {
-  fill: #5d7594;
+  fill: var(--muted);
   font-size: 12px;
-  font-family: Georgia, serif;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
 .deltaStrip {
@@ -179,12 +199,6 @@
   gap: 8px;
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(27, 75, 124, 0.08);
-  background: rgba(247, 251, 255, 0.96);
-}
-
-.legendItem small {
-  color: #5d7594;
 }
 
 .legendBar,
@@ -202,7 +216,7 @@
 .legendLine {
   width: 24px;
   height: 4px;
-  background: linear-gradient(90deg, #2d6fb5 0%, #74ddc3 100%);
+  background: linear-gradient(90deg, #2d6fb5 0%, #45d1b8 100%);
 }
 
 .deltaCard {
@@ -222,12 +236,10 @@
 .activePill {
   padding: 10px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(27, 75, 124, 0.08);
-  background: rgba(255, 255, 255, 0.86);
 }
 
 .activePill {
-  background: linear-gradient(135deg, rgba(116, 221, 195, 0.24), rgba(198, 241, 208, 0.2));
+  background: linear-gradient(135deg, rgba(69, 209, 184, 0.16), rgba(198, 241, 208, 0.2));
   color: #0f5d49;
 }
 
@@ -260,16 +272,6 @@
   margin-bottom: 10px;
 }
 
-@keyframes pulseWatch {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(178, 119, 21, 0.18), 0 0 34px rgba(255, 197, 92, 0.26); }
-}
-
-@keyframes pulseRisk {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(177, 62, 77, 0.2), 0 0 34px rgba(255, 120, 120, 0.3); }
-}
-
 @media (max-width: 960px) {
   .hero,
   .grid {
@@ -284,5 +286,11 @@
   .deltaStrip {
     grid-template-columns: 1fr;
     min-width: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 18px 16px 72px;
   }
 }

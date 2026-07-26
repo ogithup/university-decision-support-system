@@ -1,11 +1,24 @@
 .page {
+  --bg: #ecf3fb;
+  --bg-2: #f7fbff;
+  --panel: rgba(255, 255, 255, 0.84);
+  --panel-strong: rgba(255, 255, 255, 0.94);
+  --line: rgba(25, 70, 116, 0.12);
+  --line-2: rgba(25, 70, 116, 0.18);
+  --text: #173a61;
+  --muted: #6983a3;
+  --gold: #c68d2b;
+  --blue: #56a8ff;
+  --mint: #45d1b8;
+  --red: #c24e59;
   min-height: 100vh;
-  padding: 24px;
+  padding: 22px 24px 72px;
   background:
-    radial-gradient(circle at top left, rgba(255, 207, 132, 0.36), transparent 24%),
-    radial-gradient(circle at top right, rgba(98, 178, 255, 0.24), transparent 28%),
-    linear-gradient(180deg, #f5f8fc 0%, #edf3fb 100%);
-  color: #14304f;
+    radial-gradient(circle at top left, rgba(255, 199, 112, 0.22), transparent 24%),
+    radial-gradient(circle at top right, rgba(105, 177, 255, 0.24), transparent 28%),
+    linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
+  color: var(--text);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   display: grid;
   gap: 18px;
 }
@@ -18,14 +31,30 @@
 .riskCard,
 .templateCard,
 .templateActive {
-  border: 1px solid rgba(27, 75, 124, 0.1);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 18px 45px rgba(41, 78, 123, 0.08);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: linear-gradient(180deg, var(--panel-strong) 0%, var(--panel) 100%);
+  box-shadow: 0 16px 36px rgba(33, 74, 118, 0.08);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.topbar:hover,
+.panel:hover,
+.summaryCard:hover,
+.miniCard:hover,
+.metricRow:hover,
+.riskCard:hover,
+.templateCard:hover,
+.templateActive:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 52px rgba(33, 74, 118, 0.14);
+  border-color: rgba(86, 168, 255, 0.18);
 }
 
 .topbar {
-  padding: 20px 22px;
+  padding: 24px 24px 22px;
   display: flex;
   justify-content: space-between;
   gap: 18px;
@@ -34,7 +63,7 @@
 
 .sectionLabel {
   margin: 0 0 8px;
-  color: #aa6e12;
+  color: var(--gold);
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 11px;
@@ -48,14 +77,20 @@
 .metricRow span,
 .riskCard small,
 .metaRow span,
-.miniCard span {
-  color: #5d7594;
+.miniCard span,
+.resultHero p {
+  color: var(--muted);
 }
 
 .topbar h1,
 .panelHeader h2,
 .resultHero h3 {
   margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.topbar h1 {
+  font-size: clamp(2rem, 3vw, 2.8rem);
 }
 
 .topbarActions {
@@ -73,29 +108,29 @@
 }
 
 .backLink {
-  border: 1px solid rgba(27, 75, 124, 0.1);
-  background: rgba(245, 250, 255, 0.94);
-  color: #14304f;
+  border: 1px solid var(--line);
+  background: rgba(246, 250, 255, 0.92);
+  color: var(--text);
 }
 
 .primaryButton {
   border: none;
-  background: linear-gradient(90deg, #ffc55c 0%, #7ac0ff 100%);
-  color: #14304f;
+  background: linear-gradient(90deg, #ffc45d 0%, #72b6ff 100%);
+  color: var(--text);
   font-weight: 700;
   cursor: pointer;
 }
 
 .layout {
   display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
+  grid-template-columns: 320px minmax(0, 1fr);
   gap: 18px;
 }
 
 .panel {
-  padding: 18px;
+  padding: 20px;
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .panelHeader {
@@ -121,17 +156,17 @@
 }
 
 .templateCard {
-  background: rgba(247, 251, 255, 0.96);
+  background: rgba(247, 251, 255, 0.88);
 }
 
 .templateActive {
-  background: linear-gradient(145deg, rgba(255, 244, 214, 0.92), rgba(232, 244, 255, 0.94));
+  background: linear-gradient(135deg, rgba(255, 231, 182, 0.5), rgba(114, 182, 255, 0.16));
 }
 
 .summaryCard {
-  padding: 16px;
+  padding: 18px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .metaRow {
@@ -141,10 +176,10 @@
 }
 
 .metaRow span {
-  padding: 8px 10px;
+  padding: 9px 12px;
   border-radius: 999px;
-  background: rgba(245, 250, 255, 0.94);
-  border: 1px solid rgba(27, 75, 124, 0.08);
+  background: rgba(246, 250, 255, 0.9);
+  border: 1px solid rgba(25, 70, 116, 0.08);
 }
 
 .resultShell,
@@ -167,13 +202,14 @@
 }
 
 .miniCard {
-  padding: 14px;
+  padding: 16px;
   display: grid;
   gap: 6px;
 }
 
 .miniCard strong {
-  font-size: 28px;
+  font-size: 2rem;
+  line-height: 1;
 }
 
 .resultGrid {
@@ -186,13 +222,14 @@
 
 .metricRow,
 .riskCard {
-  padding: 14px;
+  padding: 14px 16px;
 }
 
 .metricRow {
   display: flex;
   justify-content: space-between;
   gap: 12px;
+  background: rgba(247, 251, 255, 0.88);
 }
 
 .riskHeader {
@@ -207,7 +244,7 @@
 }
 
 .errorText {
-  color: #b13e4d;
+  color: var(--red);
   margin: 0;
 }
 
@@ -222,5 +259,15 @@
 
   .resultMiniStats {
     min-width: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 18px 16px 72px;
+  }
+
+  .resultMiniStats {
+    grid-template-columns: 1fr;
   }
 }
