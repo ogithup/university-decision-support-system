@@ -401,12 +401,18 @@
 }
 
 .leaderboardList,
+.leaderboardCardGrid,
 .sourceList,
 .alertStack,
 .riskMetricRail,
 .promptStack {
   display: grid;
   gap: 10px;
+}
+
+.leaderboardCardGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .leaderRow,
@@ -433,6 +439,70 @@
 .sourceMeta {
   text-align: right;
   flex-shrink: 0;
+}
+
+.leaderCard {
+  padding: 16px;
+  border-radius: 22px;
+  display: grid;
+  gap: 12px;
+}
+
+.leaderCardHeader,
+.leaderCardFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.leaderCardBody {
+  display: grid;
+  gap: 10px;
+}
+
+.leaderCardBody span,
+.leaderCardFooter span,
+.leaderScoreBadge small,
+.leaderMiniBars small {
+  color: var(--muted);
+}
+
+.leaderScoreBadge {
+  min-width: 82px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(86, 168, 255, 0.12);
+  text-align: right;
+}
+
+.leaderScoreBadge strong {
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.leaderMiniBars {
+  display: grid;
+  gap: 8px;
+}
+
+.leaderMiniTrack {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(130, 168, 206, 0.18);
+  margin-top: 4px;
+}
+
+.leaderMiniFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--blue) 0%, var(--mint) 100%);
+}
+
+.positiveDelta {
+  color: var(--green);
+  font-weight: 700;
 }
 
 .collaborationGrid,
@@ -592,6 +662,100 @@
   background: rgba(250, 252, 255, 0.86);
 }
 
+.settingsTitle {
+  margin: 0;
+  font-size: clamp(1.8rem, 2.6vw, 2.5rem);
+  letter-spacing: -0.03em;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.settingsPanel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.controlGroup {
+  display: grid;
+  gap: 10px;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.controlChip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+.controlChip:hover,
+.controlChipActive {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(34, 75, 122, 0.12);
+  border-color: rgba(69, 209, 184, 0.28);
+  background: rgba(235, 252, 248, 0.94);
+}
+
+.selectField,
+.inputField {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(248, 251, 255, 0.94);
+  color: var(--text);
+  padding: 0 14px;
+  font: inherit;
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.checkboxCard {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(248, 251, 255, 0.92);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.checkboxCard input {
+  width: 16px;
+  height: 16px;
+  accent-color: #45d1b8;
+}
+
 .settingsFlyout {
   position: fixed;
   top: 88px;
@@ -621,6 +785,48 @@
   gap: 8px;
 }
 
+.adminActionStack {
+  display: grid;
+  gap: 10px;
+}
+
+.healthStack,
+.jobStack {
+  display: grid;
+  gap: 10px;
+}
+
+.healthRow,
+.jobRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(25, 70, 116, 0.08);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.jobRow {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.healthRow b,
+.jobRow b {
+  display: block;
+  color: var(--text);
+}
+
+.healthRow small,
+.jobRow small {
+  color: var(--muted);
+}
+
 .utilityAction {
   padding: 10px 14px;
   border: 1px solid var(--line);
@@ -629,6 +835,30 @@
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
+}
+
+.fileAction {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.fileAction input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .assistantLauncher {
@@ -780,7 +1010,8 @@
   .collaborationGrid,
   .financeGrid,
   .riskGrid,
-  .benchmarkGrid {
+  .benchmarkGrid,
+  .settingsGrid {
     grid-template-columns: 1fr;
   }
 
@@ -788,8 +1019,16 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  .checkboxGrid {
+    grid-template-columns: 1fr;
+  }
+
   .heroSideStack {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .leaderboardCardGrid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -816,7 +1055,8 @@
   .heroSideStack,
   .financeKpis,
   .collaborationGrid,
-  .benchmarkGrid {
+  .benchmarkGrid,
+  .settingsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -830,7 +1070,9 @@
   .heroSideStack,
   .financeKpis,
   .collaborationGrid,
-  .benchmarkGrid {
+  .benchmarkGrid,
+  .settingsGrid,
+  .checkboxGrid {
     grid-template-columns: 1fr;
   }
 

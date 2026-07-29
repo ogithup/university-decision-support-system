@@ -2,13 +2,9 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
-import {
-  AcademicPerformanceCenterResponse,
-  DashboardSummaryResponse,
-  FinanceSummaryResponse,
-} from "../../types/university";
+import { AcademicPerformanceCenterResponse, DashboardSummaryResponse, FinanceSummaryResponse } from "../../types/university";
 import { AssistantPanel } from "./assistant-panel";
 import styles from "./page.module.css";
 
@@ -26,12 +22,15 @@ function slugify(value: string) {
   return value.toLowerCase().replaceAll("%", "pct").replaceAll(" ", "-").replaceAll("_", "-").replaceAll("/", "-");
 }
 
-function isNegativeDelta(delta: string) {
-  return delta.trim().startsWith("-");
-}
-
 function getInsightHref(kind: string, key: string): Route {
   return `/dashboard/insights/${kind}-${slugify(key)}` as Route;
+}
+
+function getResourceDetailHref(group: "student" | "finance" | "capacity"): Route {
+  if (group === "finance") {
+    return "/dashboard/finance/analysis" as Route;
+  }
+  return "/dashboard/scenarios/student-capacity" as Route;
 }
 
 function getStatusPulse(status: string, stylesMap: Record<string, string>) {
@@ -62,12 +61,13 @@ function MiniBars({ items }: { items: Array<{ label: string; value: number }> })
 }
 
 function ExecutiveSparkline({ items }: { items: Array<{ label: string; value: number }> }) {
-  const max = Math.max(...items.map((item) => item.value), 1);
+  const safeItems = items.length > 0 ? items : [{ label: "0", value: 0 }];
+  const max = Math.max(...safeItems.map((item) => item.value), 1);
   const width = 320;
   const height = 84;
-  const linePath = items
+  const linePath = safeItems
     .map((item, index) => {
-      const x = 18 + (index * (width - 36)) / Math.max(items.length - 1, 1);
+      const x = 18 + (index * (width - 36)) / Math.max(safeItems.length - 1, 1);
       const y = height - 14 - (item.value / max) * 42;
       return `${index === 0 ? "M" : "L"} ${x} ${y}`;
     })
@@ -81,22 +81,26 @@ function ExecutiveSparkline({ items }: { items: Array<{ label: string; value: nu
           <stop offset="100%" stopColor="#45d1b8" />
         </linearGradient>
       </defs>
-      {items.map((item, index) => {
-        const x = 18 + (index * (width - 36)) / Math.max(items.length - 1, 1);
+      {safeItems.map((item, index) => {
+        const x = 18 + (index * (width - 36)) / Math.max(safeItems.length - 1, 1);
         const y = height - 14 - (item.value / max) * 42;
-        return <circle key={item.label} cx={x} cy={y} r={4} className={styles.executiveSparkPoint} />;
+        return <circle key={`${item.label}-${index}`} cx={x} cy={y} r={4} className={styles.executiveSparkPoint} />;
       })}
       <path d={linePath} className={styles.executiveSparkPath} />
     </svg>
   );
 }
 
-function ScoreMatrix({ items }: { items: Array<{ label: string; value: number }> }) {
+function ScoreMatrix({ items }: { items: Array<{ id?: string | null; label: string; value: number }> }) {
   const max = Math.max(...items.map((item) => item.value), 1);
   return (
     <div className={styles.scoreMatrix}>
       {items.map((item) => (
-        <Link key={item.label} href={getInsightHref("faculty", item.label)} className={`${styles.scoreMatrixRow} ${styles.interactiveCard}`}>
+        <Link
+          key={item.id || item.label}
+          href={(item.id ? `/faculties/${item.id}` : getInsightHref("faculty", item.label)) as Route}
+          className={`${styles.scoreMatrixRow} ${styles.interactiveCard}`}
+        >
           <strong>{item.label}</strong>
           <div className={styles.scoreMatrixTrack}>
             <div className={styles.scoreMatrixFill} style={{ width: `${(item.value / max) * 100}%` }} />
@@ -117,9 +121,10 @@ export function DashboardClient({
   finance: FinanceSummaryResponse;
   academicCenter: AcademicPerformanceCenterResponse;
 }) {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const executiveScore = Math.round(summary.faculty_scores.reduce((acc, item) => acc + item.value, 0) / Math.max(summary.faculty_scores.length, 1));
-  const watchCount = academicCenter.metrics.filter((metric) => metric.status === "watch").length + summary.source_health.filter((source) => source.status.toLowerCase() === "watch").length;
+  const watchCount =
+    academicCenter.metrics.filter((metric) => metric.status === "watch").length +
+    summary.source_health.filter((source) => source.status.toLowerCase() === "watch").length;
   const riskCount = summary.alerts.filter((alert) => alert.level.toLowerCase() === "high").length;
   const alertCoverage = Math.max(100 - riskCount * 9 - watchCount * 4, 58);
 
@@ -131,41 +136,6 @@ export function DashboardClient({
       workloads: summary.work_distribution.slice(0, 4),
     };
   }, [academicCenter.metrics, summary.source_health, summary.work_distribution]);
-
-  const settingsPanel = (
-    <article className={`${styles.glassPanel} ${styles.settingsFlyout}`}>
-      <div className={styles.panelHeader}>
-        <div>
-          <p className={styles.sectionLabel}>Ayarlar</p>
-          <h3>Command Center Yardimcilari</h3>
-        </div>
-        <button type="button" className={styles.assistantClose} onClick={() => setIsSettingsOpen(false)}>
-          Kapat
-        </button>
-      </div>
-      <div className={styles.settingsFlyoutBody}>
-        <div className={styles.utilityCard}>
-          <strong>Veri Modlari</strong>
-          <small>Warehouse live, Excel / JSON ve mock fallback ayni cockpit semasi icinde okunur.</small>
-          <div className={styles.utilityMeta}>
-            <span>{academicCenter.source_mode === "warehouse_live" ? "Warehouse Live" : "Mock Fallback"}</span>
-            <span>{summary.last_sync}</span>
-          </div>
-        </div>
-        <div className={styles.utilityCard}>
-          <strong>Hizli Eylemler</strong>
-          <div className={styles.utilityButtonRail}>
-            <Link href="/scenario-center" className={styles.utilityAction}>
-              Senaryo Merkezi
-            </Link>
-            <Link href={"/dashboard/insights/risk-overview" as Route} className={styles.utilityAction}>
-              Risk Detayi
-            </Link>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
 
   return (
     <main className={styles.commandCenter}>
@@ -185,9 +155,9 @@ export function DashboardClient({
           <Link href="/scenario-center" className={styles.topRailButton}>
             Senaryo
           </Link>
-          <button type="button" className={styles.topRailButton} onClick={() => setIsSettingsOpen((current) => !current)}>
+          <Link href={"/dashboard/settings" as Route} className={styles.topRailButton}>
             Ayarlar
-          </button>
+          </Link>
         </div>
       </header>
 
@@ -198,9 +168,7 @@ export function DashboardClient({
               <div>
                 <p className={styles.sectionLabel}>Yonetici Ozeti</p>
                 <h1>University Command Center</h1>
-                <p className={styles.heroSummary}>
-                  Akademik performans, mali akıs, risk ve benchmark sinyalleri tek karar ekraninda birlestirilir.
-                </p>
+                <p className={styles.heroSummary}>Akademik performans, mali akis, risk ve benchmark sinyalleri tek karar ekraninda birlestirilir.</p>
               </div>
               <div className={styles.heroMetaRail}>
                 <span>{academicCenter.period || summary.academic_year}</span>
@@ -283,20 +251,52 @@ export function DashboardClient({
             <div className={styles.featureVisual}>
               <ExecutiveSparkline items={summary.publication_trend} />
             </div>
-            <div className={styles.leaderboardList}>
+            <div className={styles.leaderboardCardGrid}>
               {summary.top_performers.slice(0, 5).map((person) => (
                 <Link
                   key={person.academic_id}
-                  href={getInsightHref("leader", person.academic_id)}
-                  className={`${styles.leaderRow} ${styles.interactiveCard} ${person.change < 0 ? styles.pulseRisk : ""}`}
+                  href={`/academics/${person.academic_id}` as Route}
+                  className={`${styles.leaderCard} ${styles.interactiveCard} ${person.change < 0 ? styles.pulseRisk : ""}`}
                 >
-                  <div>
-                    <strong>{person.name}</strong>
-                    <span>{person.title} | {person.department}</span>
+                  <div className={styles.leaderCardHeader}>
+                    <div>
+                      <strong>{person.name}</strong>
+                      <span>{person.title}</span>
+                    </div>
+                    <div className={styles.leaderScoreBadge}>
+                      <strong>{person.score}</strong>
+                      <small>Genel skor</small>
+                    </div>
                   </div>
-                  <div className={styles.leaderMetrics}>
-                    <strong>{person.score}</strong>
-                    <span className={person.change < 0 ? styles.negativeDelta : ""}>{person.change >= 0 ? "+" : ""}{person.change}</span>
+                  <div className={styles.leaderCardBody}>
+                    <span>{person.department}</span>
+                    <div className={styles.leaderMiniBars}>
+                      <div>
+                        <small>Arastirma</small>
+                        <div className={styles.leaderMiniTrack}>
+                          <div className={styles.leaderMiniFill} style={{ width: `${Math.min(100, person.score)}%` }} />
+                        </div>
+                      </div>
+                      <div>
+                        <small>Egitim</small>
+                        <div className={styles.leaderMiniTrack}>
+                          <div className={styles.leaderMiniFill} style={{ width: `${Math.min(100, person.score - 8)}%` }} />
+                        </div>
+                      </div>
+                      <div>
+                        <small>Momentum</small>
+                        <div className={styles.leaderMiniTrack}>
+                          <div className={styles.leaderMiniFill} style={{ width: `${Math.min(100, Math.max(12, person.score + person.change * 4))}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.leaderCardFooter}>
+                    <span>Top 5 liderlik sinyali</span>
+                    <strong className={person.change < 0 ? styles.negativeDelta : styles.positiveDelta}>
+                      {person.change >= 0 ? "+" : ""}
+                      {person.change}
+                    </strong>
                   </div>
                 </Link>
               ))}
@@ -382,6 +382,9 @@ export function DashboardClient({
               <p className={styles.sectionLabel}>Mali</p>
               <h2>Gelir, gider ve kapasite komut paneli</h2>
             </div>
+            <Link href={"/dashboard/finance/analysis" as Route} className={styles.detailLink}>
+              Mali detaylari gor
+            </Link>
             <span className={styles.sectionPill}>{finance.academic_year}</span>
           </div>
           <div className={styles.financeGrid}>
@@ -390,7 +393,7 @@ export function DashboardClient({
                 {finance.kpis.map((kpi) => (
                   <Link
                     key={kpi.label}
-                    href={getInsightHref("finance-kpi", kpi.label)}
+                    href={"/dashboard/finance/analysis" as Route}
                     className={`${styles.financeKpiCard} ${styles.interactiveCard} ${getStatusPulse(kpi.status, styles)}`}
                   >
                     <strong>{kpi.label}</strong>
@@ -502,7 +505,7 @@ export function DashboardClient({
                 <div className={styles.miniMetricGroup}>
                   <strong>Ogrenci</strong>
                   {summary.student_metrics.slice(0, 2).map((item) => (
-                    <Link key={item.code} href={getInsightHref("student-metric", item.code)} className={`${styles.metricLine} ${styles.interactiveCard}`}>
+                    <Link key={item.code} href={getResourceDetailHref("student")} className={`${styles.metricLine} ${styles.interactiveCard}`}>
                       <span>{item.label}</span>
                       <b>{item.value}</b>
                     </Link>
@@ -511,7 +514,7 @@ export function DashboardClient({
                 <div className={styles.miniMetricGroup}>
                   <strong>Mali</strong>
                   {summary.finance_metrics.slice(0, 2).map((item) => (
-                    <Link key={item.code} href={getInsightHref("finance-metric", item.code)} className={`${styles.metricLine} ${styles.interactiveCard}`}>
+                    <Link key={item.code} href={getResourceDetailHref("finance")} className={`${styles.metricLine} ${styles.interactiveCard}`}>
                       <span>{item.label}</span>
                       <b>{item.value}</b>
                     </Link>
@@ -520,7 +523,7 @@ export function DashboardClient({
                 <div className={styles.miniMetricGroup}>
                   <strong>Kapasite</strong>
                   {summary.capacity_metrics.slice(0, 2).map((item) => (
-                    <Link key={item.code} href={getInsightHref("capacity-metric", item.code)} className={`${styles.metricLine} ${styles.interactiveCard}`}>
+                    <Link key={item.code} href={getResourceDetailHref("capacity")} className={`${styles.metricLine} ${styles.interactiveCard}`}>
                       <span>{item.label}</span>
                       <b>{item.value}</b>
                     </Link>
@@ -532,7 +535,6 @@ export function DashboardClient({
         </section>
       </section>
 
-      {isSettingsOpen ? settingsPanel : null}
       <AssistantPanel prompts={summary.assistant_prompts} />
     </main>
   );
