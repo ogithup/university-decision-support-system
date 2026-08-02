@@ -23,6 +23,36 @@
   gap: 18px;
 }
 
+.commandRail {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 18px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: rgba(244, 249, 255, 0.86);
+  backdrop-filter: blur(18px);
+}
+
+.railBrand {
+  display: grid;
+  gap: 4px;
+}
+
+.railBrand strong {
+  font-size: 15px;
+}
+
+.railActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .topbar,
 .panel,
 .summaryCard,
@@ -59,6 +89,27 @@
   justify-content: space-between;
   gap: 18px;
   align-items: flex-start;
+}
+
+.topbarSummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 240px;
+}
+
+.summaryBadge {
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(25, 70, 116, 0.08);
+  background: rgba(247, 251, 255, 0.88);
+  display: grid;
+  gap: 4px;
+}
+
+.summaryBadge strong {
+  font-size: 1.8rem;
+  line-height: 1;
 }
 
 .sectionLabel {
@@ -169,6 +220,46 @@
   gap: 12px;
 }
 
+.manualForm {
+  display: grid;
+  gap: 14px;
+}
+
+.formTitleRow {
+  display: grid;
+  gap: 4px;
+}
+
+.formTitleRow small,
+.inputCard span {
+  color: var(--muted);
+}
+
+.inputGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.inputCard {
+  padding: 14px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(25, 70, 116, 0.08);
+  background: rgba(247, 251, 255, 0.88);
+  display: grid;
+  gap: 10px;
+}
+
+.inputField {
+  width: 100%;
+  border: 1px solid rgba(25, 70, 116, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+  padding: 12px 14px;
+  font: inherit;
+}
+
 .metaRow {
   display: flex;
   flex-wrap: wrap;
@@ -249,6 +340,7 @@
 }
 
 @media (max-width: 980px) {
+  .commandRail,
   .topbar,
   .resultHero,
   .layout,
@@ -259,6 +351,11 @@
 
   .resultMiniStats {
     min-width: 0;
+  }
+
+  .topbarSummary,
+  .inputGrid {
+    grid-template-columns: 1fr;
   }
 }
 

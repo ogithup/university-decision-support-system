@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { CommandCenterHeader } from "../../../components/command-center-header";
 import { fetchDashboardInsight } from "../../../../lib/api";
 import { InsightDetailResponse } from "../../../../types/university";
 import styles from "./page.module.css";
@@ -89,9 +90,10 @@ export default async function DashboardInsightPage({ params }: { params: Promise
 
   return (
     <main className={styles.page}>
-      <div className={styles.topActions}>
-        <Link href="/dashboard" className={styles.backLink}>Dashboard&apos;a Don</Link>
-      </div>
+      <CommandCenterHeader
+        activeLabel="Akademik"
+        actions={<Link href="/dashboard" className={styles.backLink}>Dashboard&apos;a Don</Link>}
+      />
 
       <section className={`${styles.hero} ${styles[`hero_${insight.status}`] || ""}`}>
         <div>

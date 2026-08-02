@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CommandCenterHeader } from "../../../components/command-center-header";
 import { fetchDashboardSummary, fetchFinanceSummary, fetchWorkspace } from "../../../../lib/api";
 import styles from "./page.module.css";
 
@@ -46,9 +47,10 @@ export default async function WorkspacePage({
 
   return (
     <main className={styles.page}>
-      <Link href="/dashboard" className={styles.backLink}>
-        Dashboard&apos;a Don
-      </Link>
+      <CommandCenterHeader
+        activeLabel="Benchmark"
+        actions={<Link href="/dashboard" className={styles.backLink}>Dashboard&apos;a Don</Link>}
+      />
 
       <section className={styles.hero}>
         <div>

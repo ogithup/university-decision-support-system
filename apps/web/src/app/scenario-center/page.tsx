@@ -1,47 +1,75 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { CommandCenterHeader } from "../components/command-center-header";
 import { runScenario } from "../../lib/api";
 import { ScenarioRunResponse } from "../../types/university";
 import styles from "./page.module.css";
 
+type ScenarioPayload = {
+  staff_growth_pct?: number;
+  budget_change_pct?: number;
+  scholarship_change_pct?: number;
+};
 
 const scenarioTemplates = [
   {
     scenario_type: "student_growth",
     title: "Ogrenci Sayisi Senaryosu",
     description: "Ogrenci artis veya azalisinin kapasite, personel ve gelir uzerindeki etkisini izler.",
-    payload: { staff_growth_pct: 8, budget_change_pct: 5 },
+    payload: { staff_growth_pct: 8, budget_change_pct: 5 } satisfies ScenarioPayload,
   },
   {
     scenario_type: "tuition_scholarship",
     title: "Ucret ve Burs Senaryosu",
     description: "Burs ve ucret politikasinin talep ve butce dengesini nasil etkiledigini inceler.",
-    payload: { scholarship_change_pct: 6, budget_change_pct: -3 },
+    payload: { scholarship_change_pct: 6, budget_change_pct: -3 } satisfies ScenarioPayload,
   },
   {
     scenario_type: "new_program",
     title: "Yeni Program Acma",
     description: "Yeni program yatiriminin kadro, kapasite ve maliyet etkisini hesaplar.",
-    payload: { staff_growth_pct: 12, budget_change_pct: 7 },
+    payload: { staff_growth_pct: 12, budget_change_pct: 7 } satisfies ScenarioPayload,
   },
   {
     scenario_type: "economic_risk",
     title: "Ekonomik Risk Senaryosu",
     description: "Kur ve enflasyon baskisinin gelir-gider yapisina etkisini test eder.",
-    payload: { budget_change_pct: -8, scholarship_change_pct: 2 },
+    payload: { budget_change_pct: -8, scholarship_change_pct: 2 } satisfies ScenarioPayload,
   },
 ];
 
+const fieldLabels: Record<keyof ScenarioPayload, string> = {
+  staff_growth_pct: "Personel degisimi (%)",
+  budget_change_pct: "Butce degisimi (%)",
+  scholarship_change_pct: "Burs / ucret etkisi (%)",
+};
+
 export default function ScenarioCenterPage() {
   const [activeScenario, setActiveScenario] = useState(scenarioTemplates[0]);
+  const [manualPayload, setManualPayload] = useState<ScenarioPayload>(scenarioTemplates[0].payload);
   const [result, setResult] = useState<ScenarioRunResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const riskCount = useMemo(() => result?.risks.length ?? 0, [result]);
+  const editableEntries = Object.entries(manualPayload) as Array<[keyof ScenarioPayload, number | undefined]>;
+
+  useEffect(() => {
+    setManualPayload(activeScenario.payload);
+    setResult(null);
+    setError(null);
+  }, [activeScenario]);
+
+  function updatePayloadField(field: keyof ScenarioPayload, value: string) {
+    const numericValue = value === "" ? undefined : Number(value);
+    setManualPayload((current) => ({
+      ...current,
+      [field]: Number.isNaN(numericValue) ? current[field] : numericValue,
+    }));
+  }
 
   async function handleRunScenario() {
     setIsLoading(true);
@@ -51,7 +79,7 @@ export default function ScenarioCenterPage() {
         scenario_type: activeScenario.scenario_type,
         academic_year: "2025-2026",
         faculty_id: "FAC-ENG",
-        ...activeScenario.payload,
+        ...manualPayload,
       });
       setResult(response);
     } catch (scenarioError) {
@@ -63,17 +91,33 @@ export default function ScenarioCenterPage() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.topbar}>
-        <div>
-          <p className={styles.sectionLabel}>Scenario Center</p>
-          <h1>What-if Senaryo Workspace'i</h1>
-          <p className={styles.subtitle}>Dashboard uzerinde yer kaplamayan senaryo kurgu ve sonuc merkezi.</p>
-        </div>
-        <div className={styles.topbarActions}>
+      <CommandCenterHeader
+        activeLabel="Risk"
+        actions={
+          <>
           <Link href="/dashboard" className={styles.backLink}>Dashboard&apos;a Don</Link>
           <button type="button" className={styles.primaryButton} onClick={() => void handleRunScenario()} disabled={isLoading}>
             {isLoading ? "Calisiyor..." : "Senaryoyu Calistir"}
           </button>
+          </>
+        }
+      />
+
+      <header className={styles.topbar}>
+        <div>
+          <p className={styles.sectionLabel}>Scenario Center</p>
+          <h1>What-if Senaryo Workspace'i</h1>
+          <p className={styles.subtitle}>Ana dashboarddaki modern kokpit diliyle ayni tasarim sistemini kullanan senaryo kurgu ve sonuc merkezi.</p>
+        </div>
+        <div className={styles.topbarSummary}>
+          <div className={styles.summaryBadge}>
+            <strong>{editableEntries.length}</strong>
+            <span>Manuel parametre</span>
+          </div>
+          <div className={styles.summaryBadge}>
+            <strong>{riskCount}</strong>
+            <span>Risk sinyali</span>
+          </div>
         </div>
       </header>
 
@@ -111,8 +155,27 @@ export default function ScenarioCenterPage() {
             <strong>Senaryo Aciklamasi</strong>
             <p>{activeScenario.description}</p>
             <div className={styles.metaRow}>
-              {Object.entries(activeScenario.payload).map(([key, value]) => (
-                <span key={key}>{key}: {value}</span>
+              {editableEntries.map(([key, value]) => (
+                <span key={key}>{fieldLabels[key]}: {value ?? "-"}</span>
+              ))}
+            </div>
+          </div>
+          <div className={styles.manualForm}>
+            <div className={styles.formTitleRow}>
+              <strong>Manuel Senaryo Parametreleri</strong>
+              <small>Hazir kurgu degerlerini elle degistirip yeniden senaryo calistirabilirsiniz.</small>
+            </div>
+            <div className={styles.inputGrid}>
+              {editableEntries.map(([field, value]) => (
+                <label key={field} className={styles.inputCard}>
+                  <span>{fieldLabels[field]}</span>
+                  <input
+                    type="number"
+                    value={value ?? ""}
+                    onChange={(event) => updatePayloadField(field, event.target.value)}
+                    className={styles.inputField}
+                  />
+                </label>
               ))}
             </div>
           </div>

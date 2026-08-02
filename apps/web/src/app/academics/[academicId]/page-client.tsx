@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 
+import { CommandCenterHeader } from "../../components/command-center-header";
 import { AcademicDetail, AcademicWork } from "../../../types/university";
 import styles from "./page.module.css";
 
@@ -44,9 +45,10 @@ export function AcademicDetailClient({
 
   return (
     <main className={styles.page}>
-      <Link href="/dashboard" className={styles.backLink}>
-        Dashboard'a Don
-      </Link>
+      <CommandCenterHeader
+        activeLabel="Akademik"
+        actions={<Link href="/dashboard" className={styles.backLink}>Dashboard&apos;a Don</Link>}
+      />
 
       <section className={`${styles.headerCard} ${themeTone} ${riskPulse ? styles.pulseRisk : ""}`}>
         <div>
